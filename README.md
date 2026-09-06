@@ -50,26 +50,27 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
 3. Downloads Alpine's musl-compiled `libstdc++` and `libgcc_s`
 4. Installs them to `$PREFIX/lib`
 5. Uses `patchelf` to retarget the binary's interpreter to the installed musl loader
-6. Installs a wrapper that clears the glibc `LD_PRELOAD` shims set by the old guysoft wrapper (those reference glibc-only symbols like `__register_atfork`, `__errno`, `__strlen_chk`, etc. that don't exist in musl)
+6. Builds `libtagfix.so` from `scripts/libtagfix.c` — a small LD_PRELOAD shim that calls `mallopt(M_BIONIC_SET_HEAP_TAGGING_LEVEL, NONE)` at constructor time to disable Android's heap-pointer tagging, which would otherwise abort JSC with "Pointer tag ... was truncated" on free() (Android 11+).
+7. Installs a wrapper that clears the glibc `LD_PRELOAD` shims set by the old guysoft wrapper (those reference glibc-only symbols like `__register_atfork`, `__errno`, `__strlen_chk`, etc. that don't exist in musl) and sets `LD_PRELOAD` to the new `libtagfix.so`.
 
 ## What's not working
 
-Things that haven't been tested or are known broken:
+Known limitations:
 
 - **File watcher**: `@parcel/watcher`'s native binding is x86_64-only; this build has the same issue. Already mitigated upstream via `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`.
 - **TUI audio**: explicitly disabled in the wrapper (`OPENCODE_DISABLE_TUI_AUDIO=1`) since OpenTUI's audio backend isn't useful on Android.
 - **PTY support**: depends on `librust_pty_arm64.so`. The guysoft build ships this; we don't yet. PRs welcome.
-- **Pointer-tag SIGABRT**: opencode's TUI hits Android's "Pointer tag ... was truncated" abort because JSC's NaN-boxing clears the 0xB4 heap-pointer tag. The guysoft build works around this with `libtagfix.so` (LD_PRELOAD'd `mallopt` shim). We don't yet. If you see this crash on startup, see `scripts/libtagfix.c` (TODO).
 
 ## Requirements
 
 - Termux (Android 7.0+ / API 24+, aarch64)
 - `curl`, `tar`, `patchelf` (installer will install `patchelf` automatically if missing)
+- `clang` or `gcc` (the installer builds `libtagfix.so`; install with `pkg install clang` if missing)
 - Internet access to `github.com` and `dl-cdn.alpinelinux.org`
 
 ## Tested on
 
-- Pixel 8 (Android 16, Termux, aarch64) — full TUI working
+- Pixel 10 (Android 17, Termux, aarch64) — full TUI working
 
 ## Credits
 

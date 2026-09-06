@@ -6,7 +6,7 @@
 # patches the binary's interpreter, and installs everything under $PREFIX.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/<owner>/opencode-termux-musl/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
 # Or after cloning:
 #   ./install.sh
 #
@@ -95,6 +95,38 @@ fi
 patchelf --set-interpreter "$PREFIX/lib/ld-musl-aarch64.so.1" \
   "$PREFIX/libexec/opencode/opencode-musl.bin"
 
+# Build + install libtagfix.so. This shim calls mallopt() at constructor
+# time to disable Android's bionic heap tagging, which otherwise aborts
+# JSC with "Pointer tag ... was truncated" on free() on Android 11+.
+if command -v clang >/dev/null 2>&1; then
+  log "Building libtagfix.so (Android heap-tagging workaround)..."
+  if clang -shared -fPIC -Wall -Wextra \
+      -o "$PREFIX/lib/libtagfix.so" \
+      "$(dirname "$0")/scripts/libtagfix.c" 2>/tmp/libtagfix-build.log; then
+    chmod 755 "$PREFIX/lib/libtagfix.so"
+    log "libtagfix.so installed."
+  else
+    warn "libtagfix.so build failed; continuing without it (may crash on Android 11+)."
+    cat /tmp/libtagfix-build.log >&2
+    rm -f "$PREFIX/lib/libtagfix.so"
+  fi
+elif command -v gcc >/dev/null 2>&1; then
+  log "Building libtagfix.so with gcc..."
+  if gcc -shared -fPIC -Wall -Wextra \
+      -o "$PREFIX/lib/libtagfix.so" \
+      "$(dirname "$0")/scripts/libtagfix.c" 2>/tmp/libtagfix-build.log; then
+    chmod 755 "$PREFIX/lib/libtagfix.so"
+    log "libtagfix.so installed."
+  else
+    warn "libtagfix.so build failed; continuing without it."
+    cat /tmp/libtagfix-build.log >&2
+    rm -f "$PREFIX/lib/libtagfix.so"
+  fi
+else
+  warn "No C compiler found (clang/gcc). Skipping libtagfix.so."
+  warn "Install one via 'pkg install clang' for Android 11+ support."
+fi
+
 # Install wrapper script.
 log "Installing wrapper script..."
 install -d "$PREFIX/bin"
@@ -104,6 +136,12 @@ cat > "$PREFIX/bin/$INSTALL_NAME" <<'EOF'
 # Clears the glibc LD_PRELOAD shims from older wrappers; they reference
 # glibc-only symbols (__register_atfork, __errno, etc.) that don't exist
 # in musl.
+# LD_PRELOADs libtagfix.so to disable Android's bionic heap tagging,
+# which otherwise aborts JSC with "Pointer tag ... was truncated" on
+# free() on Android 11+. libtagfix.so is optional; if it's missing,
+# the wrapper still runs (with possible crashes on Android 11+).
+LD_PRELOAD="$PREFIX/lib/libtagfix.so${LD_PRELOAD:+:$LD_PRELOAD}"
+[ -f "$LD_PRELOAD" ] || unset LD_PRELOAD
 exec env -i \
   HOME="$HOME" \
   PATH="$PATH" \
@@ -115,6 +153,7 @@ exec env -i \
   TMP="${TMPDIR:-$HOME/tmp}" \
   TERMUX_VERSION="$TERMUX_VERSION" \
   ANDROID_ROOT="${ANDROID_ROOT:-/system}" \
+  LD_PRELOAD="$LD_PRELOAD" \
   LD_LIBRARY_PATH="$PREFIX/lib" \
   OPENCODE_DISABLE_TUI_AUDIO=1 \
   OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true \
