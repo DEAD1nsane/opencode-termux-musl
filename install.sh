@@ -222,4 +222,3 @@ chmod +x "$PREFIX/bin/$INSTALL_NAME"
 
 log "Done. Try: $INSTALL_NAME --version"
 "$PREFIX/bin/$INSTALL_NAME" --version
-
