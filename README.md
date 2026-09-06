@@ -105,7 +105,7 @@ Known limitations:
 ## Credits
 
 - [opencode](https://github.com/anomalyco/opencode) by [Anomaly](https://anoma.ly) — the AI coding CLI this project wraps
-- [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux) — the original Android port and Bionic compatibility shims that informed this work
+- [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux) by [@guysoft](https://github.com/guysoft) — the original Android port and Bionic compatibility shims that informed this work
 - [Alpine Linux](https://alpinelinux.org/) — musl libc + libstdc++/libgcc_s packages
 
 ## License
