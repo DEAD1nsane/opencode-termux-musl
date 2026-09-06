@@ -128,6 +128,20 @@ clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" \
   || die "Failed to compile libresolvefix.so"
 install -m 755 "$WORK/libresolvefix.so" "$PREFIX/lib/"
 
+# Install the HTTP proxy — Bun's io_uring-based networking doesn't work
+# on Android, so we route API requests through a Python proxy on localhost.
+log "Installing HTTP proxy..."
+PROXY_SRC="$WORK/proxy.py"
+if [ -f "$SCRIPT_DIR/scripts/proxy.py" ]; then
+  cp "$SCRIPT_DIR/scripts/proxy.py" "$PROXY_SRC"
+else
+  curl -fsSL -o "$PROXY_SRC" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/proxy.py" \
+    || die "Could not download proxy.py"
+fi
+install -d "$PREFIX/libexec/opencode"
+install -m 755 "$PROXY_SRC" "$PREFIX/libexec/opencode/proxy.py"
+
 # Install the opencode binary into $PREFIX/libexec.
 log "Installing opencode binary..."
 install -d "$PREFIX/libexec/opencode"
@@ -186,6 +200,18 @@ export ANDROID_ROOT="${ANDROID_ROOT:-/system}"
 export LD_LIBRARY_PATH="$PREFIX/lib"
 export OPENCODE_DISABLE_TUI_AUDIO=1
 export OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true
+export SSL_CERT_FILE="$PREFIX/etc/tls/cert.pem"
+export NODE_EXTRA_CA_CERTS="$PREFIX/etc/tls/cert.pem"
+export CURL_CA_BUNDLE="$PREFIX/etc/tls/cert.pem"
+
+# Start the HTTP proxy if not already running.
+# Bun's io_uring networking doesn't work on Android, so API requests
+# go through this Python proxy on localhost.
+if ! pgrep -f "proxy.py" >/dev/null 2>&1; then
+  nohup python3 "$PREFIX/libexec/opencode/proxy.py" >/dev/null 2>&1 &
+  sleep 0.3
+fi
+
 exec "$PREFIX/libexec/opencode/opencode-musl.bin" "$@"
 EOF
 chmod +x "$PREFIX/bin/$INSTALL_NAME"
