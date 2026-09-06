@@ -6,7 +6,7 @@
 # patches the binary's interpreter, and installs everything under $PREFIX.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | sh
 # Or after cloning:
 #   ./install.sh
 #
@@ -119,7 +119,7 @@ if [ -f "$SCRIPT_DIR/scripts/libresolvefix.c" ]; then
   cp "$SCRIPT_DIR/scripts/libresolvefix.c" "$RESOLVEFIX_SRC"
 else
   curl -fsSL -o "$RESOLVEFIX_SRC" \
-    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/libresolvefix.c" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/libresolvefix.c" \
     || die "Could not download libresolvefix.c"
 fi
 clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" \
@@ -136,7 +136,7 @@ if [ -f "$SCRIPT_DIR/scripts/proxy.py" ]; then
   cp "$SCRIPT_DIR/scripts/proxy.py" "$PROXY_SRC"
 else
   curl -fsSL -o "$PROXY_SRC" \
-    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/proxy.py" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/proxy.py" \
     || die "Could not download proxy.py"
 fi
 install -d "$PREFIX/libexec/opencode"
