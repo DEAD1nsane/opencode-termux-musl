@@ -105,6 +105,25 @@ install -m 755 "$LIBSTDC_FILE"                     "$PREFIX/lib/"
 rm -f "$PREFIX/lib/libstdc++.so.6"
 ln -s "$(basename "$LIBSTDC_FILE")" "$PREFIX/lib/libstdc++.so.6"
 
+# Build libresolvefix.so — LD_PRELOAD shim that redirects musl's
+# /etc/resolv.conf reads to Termux's $PREFIX/etc/resolv.conf.
+log "Building libresolvefix.so..."
+if ! command -v clang >/dev/null 2>&1; then
+  warn "clang not found; attempting Termux install..."
+  pkg install -y clang || die "Please install clang: pkg install clang"
+fi
+RESOLVEFIX_SRC="$WORK/libresolvefix.c"
+if [ -f scripts/libresolvefix.c ]; then
+  cp scripts/libresolvefix.c "$RESOLVEFIX_SRC"
+else
+  curl -fsSL -o "$RESOLVEFIX_SRC" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/libresolvefix.c" \
+    || die "Could not download libresolvefix.c"
+fi
+clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" -ldl \
+  || die "Failed to compile libresolvefix.so"
+install -m 755 "$WORK/libresolvefix.so" "$PREFIX/lib/"
+
 # Install the opencode binary into $PREFIX/libexec.
 log "Installing opencode binary..."
 install -d "$PREFIX/libexec/opencode"
@@ -136,24 +155,34 @@ cat > "$PREFIX/bin/$INSTALL_NAME" <<'EOF'
 #
 # This wrapper:
 #   - clears LD_PRELOAD (so any stale glibc shim is dropped),
+#   - loads libresolvefix.so (redirects musl's /etc/resolv.conf
+#     reads to Termux's $PREFIX/etc/resolv.conf for DNS),
 #   - sets the env vars opencode needs on Android (no TUI audio,
 #     no @parcel/watcher, sane TMPDIRs, TERM for the TUI),
 #   - runs the binary against the musl loader we just installed.
-exec env -i \
-  HOME="$HOME" \
-  PATH="$PATH" \
-  PREFIX="$PREFIX" \
-  TERM="${TERM:-xterm-256color}" \
-  LANG="${LANG:-en_US.UTF-8}" \
-  TMPDIR="${TMPDIR:-$HOME/tmp}" \
-  TEMP="${TMPDIR:-$HOME/tmp}" \
-  TMP="${TMPDIR:-$HOME/tmp}" \
-  TERMUX_VERSION="$TERMUX_VERSION" \
-  ANDROID_ROOT="${ANDROID_ROOT:-/system}" \
-  LD_LIBRARY_PATH="$PREFIX/lib" \
-  OPENCODE_DISABLE_TUI_AUDIO=1 \
-  OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true \
-  "$PREFIX/libexec/opencode/opencode-musl.bin" "$@"
+#
+# NOTE: we do NOT use env -i. On Android, DNS resolution depends on
+# bionic's resolver which reads system properties and Android's netd
+# daemon — not env vars, but the resolver needs access to the system
+# libraries that provide these. env -i strips everything and breaks
+# DNS completely (curl returns "Could not resolve host"). Instead we
+# set only what we need and unset what we don't.
+unset LD_PRELOAD
+export LD_PRELOAD="$PREFIX/lib/libresolvefix.so"
+export HOME
+export PATH
+export PREFIX
+export TERM="${TERM:-xterm-256color}"
+export LANG="${LANG:-en_US.UTF-8}"
+export TMPDIR="${TMPDIR:-$HOME/tmp}"
+export TEMP="${TMPDIR:-$HOME/tmp}"
+export TMP="${TMPDIR:-$HOME/tmp}"
+export TERMUX_VERSION
+export ANDROID_ROOT="${ANDROID_ROOT:-/system}"
+export LD_LIBRARY_PATH="$PREFIX/lib"
+export OPENCODE_DISABLE_TUI_AUDIO=1
+export OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true
+exec "$PREFIX/libexec/opencode/opencode-musl.bin" "$@"
 EOF
 chmod +x "$PREFIX/bin/$INSTALL_NAME"
 
