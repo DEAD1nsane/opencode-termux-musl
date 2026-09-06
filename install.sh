@@ -203,10 +203,15 @@ export OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true
 export SSL_CERT_FILE="$PREFIX/etc/tls/cert.pem"
 export NODE_EXTRA_CA_CERTS="$PREFIX/etc/tls/cert.pem"
 export CURL_CA_BUNDLE="$PREFIX/etc/tls/cert.pem"
+export HTTP_PROXY="http://127.0.0.1:8080"
+export HTTPS_PROXY="http://127.0.0.1:8080"
+export http_proxy="http://127.0.0.1:8080"
+export https_proxy="http://127.0.0.1:8080"
 
 # Start the HTTP proxy if not already running.
-# Bun's io_uring networking doesn't work on Android, so API requests
-# go through this Python proxy on localhost.
+# Bun's io_uring networking doesn't work on Android, so all outbound
+# traffic (API requests, webfetch, websearch, etc.) goes through this
+# Python proxy on localhost.
 if ! pgrep -f "proxy.py" >/dev/null 2>&1; then
   nohup python3 "$PREFIX/libexec/opencode/proxy.py" >/dev/null 2>&1 &
   sleep 0.3
