@@ -26,13 +26,7 @@ On Termux:
 curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
 ```
 
-After it finishes, you should see:
-
-```
-1.18.29
-```
-
-(Or whatever the current upstream version is.)
+After it finishes, the wrapper prints the installed opencode version (whatever upstream's current release is).
 
 Then run:
 
@@ -45,19 +39,26 @@ opencode
 
 The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/ld-musl-aarch64.so.1`, which Termux doesn't ship. The installer:
 
-1. Downloads the latest upstream `opencode-linux-arm64-musl.tar.gz`
-2. Downloads Alpine's musl package (provides `ld-musl-aarch64.so.1`)
-3. Downloads Alpine's musl-compiled `libstdc++` and `libgcc_s`
-4. Installs them to `$PREFIX/lib`
-5. Uses `patchelf` to retarget the binary's interpreter to the installed musl loader
-6. Builds `libtagfix.so` from `scripts/libtagfix.c` — a small LD_PRELOAD shim that calls `mallopt(M_BIONIC_SET_HEAP_TAGGING_LEVEL, NONE)` at constructor time to disable Android's heap-pointer tagging, which would otherwise abort JSC with "Pointer tag ... was truncated" on free() (Android 11+).
-7. Installs a wrapper that clears the glibc `LD_PRELOAD` shims set by the old guysoft wrapper (those reference glibc-only symbols like `__register_atfork`, `__errno`, `__strlen_chk`, etc. that don't exist in musl) and sets `LD_PRELOAD` to the new `libtagfix.so`.
+1. Downloads the latest upstream `opencode-linux-arm64-musl.tar.gz`.
+2. Downloads Alpine's musl package (provides `ld-musl-aarch64.so.1`) and musl-compiled `libstdc++` / `libgcc_s`.
+3. Installs them to `$PREFIX/lib`.
+4. Uses `patchelf` to retarget the binary's interpreter to the installed musl loader.
+5. Installs a wrapper that:
+   - clears any stale `LD_PRELOAD` from the previous (guysoft) wrapper — that shim references glibc-only symbols (`__register_atfork`, `__errno`, `__strlen_chk`, etc.) that don't exist in musl;
+   - sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`;
+   - runs the binary against the musl loader in `$PREFIX/lib`.
+
+## Why no `libtagfix.so` shim
+
+The other Termux build ([guysoft/opencode-termux](https://github.com/guysoft/opencode-termux)) ships an `LD_PRELOAD` shim that calls `mallopt()` to disable Android's bionic heap-pointer tagging. That build is Bionic-linked, so its allocator is bionic's — and bionic's allocator tags heap pointers with the top byte, which JSC's NaN-boxing clobbers, causing a `Pointer tag ... was truncated` abort on `free()`.
+
+This build is **musl-linked**. opencode's allocations go through musl's allocator, which does not tag pointers. The shim is therefore unnecessary here, and shipping a Bionic-targeted `.so` under a musl process would either fail to load (different libc resolution) or cause a libc-mismatch corruption. If you do hit a "Pointer tag" crash, the cause is different (e.g. kernel-level tagged-address enforcement on `ioctl`/`prctl` from a JSC path) and would need to be fixed in JSC's syscall wrappers upstream, not in userspace.
 
 ## What's not working
 
 Known limitations:
 
-- **File watcher**: `@parcel/watcher`'s native binding is x86_64-only; this build has the same issue. Already mitigated upstream via `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`.
+- **File watcher**: `@parcel/watcher`'s native binding is x86_64-only; this build has the same issue. Disabled in the wrapper via `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`.
 - **TUI audio**: explicitly disabled in the wrapper (`OPENCODE_DISABLE_TUI_AUDIO=1`) since OpenTUI's audio backend isn't useful on Android.
 - **PTY support**: depends on `librust_pty_arm64.so`. The guysoft build ships this; we don't yet. PRs welcome.
 
@@ -65,12 +66,11 @@ Known limitations:
 
 - Termux (Android 7.0+ / API 24+, aarch64)
 - `curl`, `tar`, `patchelf` (installer will install `patchelf` automatically if missing)
-- `clang` or `gcc` (the installer builds `libtagfix.so`; install with `pkg install clang` if missing)
 - Internet access to `github.com` and `dl-cdn.alpinelinux.org`
 
 ## Tested on
 
-- Pixel 10 (Android 17, Termux, aarch64) — full TUI working
+- Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string. TUI hasn't been re-tested since the install URL was filled in; reports welcome.
 
 ## Credits
 
