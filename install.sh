@@ -12,7 +12,7 @@
 #
 # Re-running is safe: it always re-downloads the latest upstream release.
 #
-# Requires: curl, tar, xz (Termux has all of these by default).
+# Requires: curl, tar (Termux has both by default).
 
 set -e
 
@@ -108,12 +108,16 @@ exec env -i \
   HOME="$HOME" \
   PATH="$PATH" \
   PREFIX="$PREFIX" \
+  TERM="${TERM:-xterm-256color}" \
+  LANG="${LANG:-en_US.UTF-8}" \
   TMPDIR="${TMPDIR:-$HOME/tmp}" \
   TEMP="${TMPDIR:-$HOME/tmp}" \
   TMP="${TMPDIR:-$HOME/tmp}" \
   TERMUX_VERSION="$TERMUX_VERSION" \
   ANDROID_ROOT="${ANDROID_ROOT:-/system}" \
   LD_LIBRARY_PATH="$PREFIX/lib" \
+  OPENCODE_DISABLE_TUI_AUDIO=1 \
+  OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true \
   "$PREFIX/libexec/opencode/opencode-musl.bin" "$@"
 EOF
 chmod +x "$PREFIX/bin/$INSTALL_NAME"
