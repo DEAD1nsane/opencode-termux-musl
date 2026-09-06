@@ -44,11 +44,27 @@ if [ "$OPENCODE_VERSION" = "latest" ]; then
 fi
 log "Installing opencode $OPENCODE_VERSION"
 
-# Pick a working Alpine mirror.
-ALPINE_BASE="https://dl-cdn.alpinelinux.org/alpine/v3.21/main/aarch64"
-MUSL_PKG="musl-1.2.5-r11.apk"
-LIBSTDC_PKG="libstdc++-14.2.0-r4.apk"
-LIBGCC_PKG="libgcc-14.2.0-r4.apk"
+# Pick a working Alpine mirror. Resolve the latest released Alpine version
+# dynamically (so we don't pin to a version that goes EOL and 404s), then
+# pick the latest matching .apk from its index.
+log "Resolving Alpine release..."
+ALPINE_VERSION=$(curl -fsSL "https://dl-cdn.alpinelinux.org/alpine/" \
+  | grep -oE 'v[0-9]+\.[0-9]+/' | sort -uV | tail -1 | tr -d /)
+[ -n "$ALPINE_VERSION" ] || die "Could not determine latest Alpine version."
+log "Using Alpine $ALPINE_VERSION."
+
+ALPINE_BASE="https://dl-cdn.alpinelinux.org/alpine/$ALPINE_VERSION/main/aarch64"
+ALPINE_INDEX=$(curl -fsSL "$ALPINE_BASE/" \
+  | grep -oE '(musl|libstdc\+\+|libgcc)-[0-9][^"<]*\.apk' | sort -uV)
+
+MUSL_PKG=$(printf '%s\n' "$ALPINE_INDEX" | grep -E '^musl-' | tail -1)
+LIBSTDC_PKG=$(printf '%s\n' "$ALPINE_INDEX" | grep -E '^libstdc\+\+-' | tail -1)
+LIBGCC_PKG=$(printf '%s\n' "$ALPINE_INDEX" | grep -E '^libgcc-' | tail -1)
+
+[ -n "$MUSL_PKG"    ] || die "Could not find musl .apk in $ALPINE_BASE/"
+[ -n "$LIBSTDC_PKG" ] || die "Could not find libstdc++ .apk in $ALPINE_BASE/"
+[ -n "$LIBGCC_PKG"  ] || die "Could not find libgcc .apk in $ALPINE_BASE/"
+log "Using $MUSL_PKG, $LIBSTDC_PKG, $LIBGCC_PKG."
 
 # Download upstream binary.
 log "Downloading upstream musl binary..."
@@ -67,19 +83,27 @@ log "Extracting..."
 cd "$WORK"
 tar -xzf "$TARBALL" || die "Failed to extract tarball"
 mkdir -p musl-libs
-(cd musl-libs && tar -xzf "../$MUSL_PKG"    2>/dev/null && \
-                 tar -xzf "../$LIBSTDC_PKG" 2>/dev/null && \
-                 tar -xzf "../$LIBGCC_PKG"  2>/dev/null)
+for pkg in "$MUSL_PKG" "$LIBSTDC_PKG" "$LIBGCC_PKG"; do
+  (cd musl-libs && tar -xzf "../$pkg") || die "Failed to extract $pkg"
+done
 
 [ -f opencode ] || die "Tarball did not contain 'opencode' binary."
+
+# Discover the actual libstdc++ filename in the extracted package. The
+# upstream binary's DT_NEEDED entries reference "libstdc++.so.6" (the SONAME),
+# so we install the versioned file and create a libstdc++.so.6 symlink to it.
+LIBSTDC_FILE=$(ls musl-libs/usr/lib/libstdc++.so.6.*.* 2>/dev/null | head -1)
+[ -n "$LIBSTDC_FILE" ] || die "Could not find libstdc++.so.6.* in extracted package."
+log "Using $LIBSTDC_FILE."
 
 # Install musl loader + libs into $PREFIX/lib.
 log "Installing musl libs to $PREFIX/lib..."
 install -d "$PREFIX/lib"
-install -m 755 musl-libs/lib/ld-musl-aarch64.so.1           "$PREFIX/lib/"
-install -m 755 musl-libs/usr/lib/libgcc_s.so.1              "$PREFIX/lib/"
-install -m 755 musl-libs/usr/lib/libstdc++.so.6.0.33        "$PREFIX/lib/"
-ln -sf libstdc++.so.6.0.33 "$PREFIX/lib/libstdc++.so.6"
+install -m 755 musl-libs/lib/ld-musl-aarch64.so.1  "$PREFIX/lib/"
+install -m 755 musl-libs/usr/lib/libgcc_s.so.1     "$PREFIX/lib/"
+install -m 755 "$LIBSTDC_FILE"                     "$PREFIX/lib/"
+rm -f "$PREFIX/lib/libstdc++.so.6"
+ln -s "$(basename "$LIBSTDC_FILE")" "$PREFIX/lib/libstdc++.so.6"
 
 # Install the opencode binary into $PREFIX/libexec.
 log "Installing opencode binary..."
