@@ -16,6 +16,8 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 TMPDIR="${TMPDIR:-$HOME/tmp}"
 OPENCODE_VERSION="${OPENCODE_VERSION:-latest}"
@@ -113,14 +115,16 @@ if ! command -v clang >/dev/null 2>&1; then
   pkg install -y clang || die "Please install clang: pkg install clang"
 fi
 RESOLVEFIX_SRC="$WORK/libresolvefix.c"
-if [ -f scripts/libresolvefix.c ]; then
-  cp scripts/libresolvefix.c "$RESOLVEFIX_SRC"
+if [ -f "$SCRIPT_DIR/scripts/libresolvefix.c" ]; then
+  cp "$SCRIPT_DIR/scripts/libresolvefix.c" "$RESOLVEFIX_SRC"
 else
   curl -fsSL -o "$RESOLVEFIX_SRC" \
     "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/libresolvefix.c" \
     || die "Could not download libresolvefix.c"
 fi
-clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" -ldl \
+clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" \
+  -Wl,--dynamic-linker="$PREFIX/lib/ld-musl-aarch64.so.1" \
+  -L"$PREFIX/lib" -nostdlib \
   || die "Failed to compile libresolvefix.so"
 install -m 755 "$WORK/libresolvefix.so" "$PREFIX/lib/"
 
