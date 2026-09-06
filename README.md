@@ -2,7 +2,7 @@
 
 Run the **upstream [opencode](https://github.com/anomalyco/opencode) CLI** on Termux / Android (aarch64) by reusing its official musl-linked ARM64 binary.
 
-This is an alternative to [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux), which cross-compiles Bun from source for Android and is pinned to opencode 1.17.9. This project avoids that build entirely.
+This is an alternative to [@guysoft](https://github.com/guysoft)'s [opencode-termux](https://github.com/guysoft/opencode-termux), which cross-compiles Bun from source for Android and is pinned to opencode 1.17.9. His project includes PTY support; this project trades that for simplicity and always being up-to-date with upstream releases.
 
 ## Why
 
@@ -105,7 +105,7 @@ Known limitations:
 ## Credits
 
 - [opencode](https://github.com/anomalyco/opencode) by [Anomaly](https://anoma.ly) — the AI coding CLI this project wraps
-- [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux) by [@guysoft](https://github.com/guysoft) — the original Android port and Bionic compatibility shims that informed this work
+- [@guysoft](https://github.com/guysoft) / [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux) — the original Android port that proved this was possible; our approach was informed by his work and we continue to link to his project as an alternative with PTY support
 - [Alpine Linux](https://alpinelinux.org/) — musl libc + libstdc++/libgcc_s packages
 
 ## License
