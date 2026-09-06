@@ -130,14 +130,14 @@ opencode2 --version
 
 | Step | Screenshot |
 |------|------------|
-| Clean terminal | <img src="docs/screenshots/00-clean-terminal.png" width="300" alt="Clean terminal"> |
-| Install opencode | <img src="docs/screenshots/01-install-complete.png" width="300" alt="Install opencode"> |
-| Version check | <img src="docs/screenshots/02-version-check.png" width="300" alt="Version check"> |
-| Installed files | <img src="docs/screenshots/03-installed-files.png" width="300" alt="Installed files"> |
-| ELF interpreter | <img src="docs/screenshots/04-elf-interpreter.png" width="300" alt="ELF interpreter"> |
-| opencode TUI | <img src="docs/screenshots/05-opencode-tui.png" width="300" alt="opencode TUI"> |
-| Running opencode | <img src="docs/screenshots/06-opencode-working.png" width="300" alt="Running opencode"> |
-| Newest version | <img src="docs/screenshots/07-opencode-newest-version.png" width="300" alt="Newest version"> |
+| Clean terminal | ![Clean terminal](docs/screenshots/00-clean-terminal.png) |
+| Install opencode | ![Install opencode](docs/screenshots/01-install-complete.png) |
+| Version check | ![Version check](docs/screenshots/02-version-check.png) |
+| Installed files | ![Installed files](docs/screenshots/03-installed-files.png) |
+| ELF interpreter | ![ELF interpreter](docs/screenshots/04-elf-interpreter.png) |
+| opencode TUI | ![opencode TUI](docs/screenshots/05-opencode-tui.png) |
+| Running opencode | ![Running opencode](docs/screenshots/06-opencode-working.png) |
+| Newest version | ![Newest version](docs/screenshots/07-opencode-newest-version.png) |
 
 </details>
 
