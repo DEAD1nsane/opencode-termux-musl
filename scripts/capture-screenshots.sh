@@ -1,120 +1,94 @@
 #!/bin/sh
-# capture-screenshots.sh — drive the install + TUI demo and screenshot
-# each step into docs/screenshots/.
+# capture-screenshots.sh — guide the user through each screenshot step.
 #
-# IMPORTANT: run this from the Termux app directly, NOT from opencode
-# or any other agent. The script calls `screencap` to capture whatever
-# is on the device's screen, so the Termux terminal must be the
-# foreground app while the script runs.
-#
-# It uses Termux's storage permission to drop the PNGs into
-# /sdcard/Pictures/, then moves them into the repo.
+# Run this from the Termux app directly (not from opencode).
+# For each step, the script prints what to run, then tells you to
+# take a screenshot with Volume Down + Power. After you take the
+# screenshot, press Enter and the script renames the last screenshot
+# into the right filename under docs/screenshots/.
 #
 # Prerequisites:
 #   - Termux is the foreground app
 #   - Storage permission granted: `termux-setup-storage`
 #   - The repo is cloned to ~/opencode-termux-musl
-#
-# Usage:
-#   ./scripts/capture-screenshots.sh
 
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SHOT_DIR="$REPO_DIR/docs/screenshots"
-TMP_DIR="/sdcard/Pictures/opencode-shots.$$"
-mkdir -p "$SHOT_DIR" "$TMP_DIR"
-trap 'rm -rf "$TMP_DIR"' EXIT
-
-PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
+mkdir -p "$SHOT_DIR"
 
 note() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
-warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
+prompt() { printf '\033[1;33m>>> %s\033[0m\n' "$*"; }
 
-capture() {
-  name="$1"; shift
-  out="$TMP_DIR/$name"
-  /system/bin/screencap -p "$out" || { warn "screencap failed"; return 1; }
-  echo "$out"
+# Find the most recent .png in /sdcard/Pictures/ (Android's default
+# screenshot directory). This is what Volume Down + Power saves to.
+latest_screenshot() {
+  ls -t /sdcard/Pictures/*.png 2>/dev/null | head -1
 }
 
-clear; sleep 0.5
+# Print a command, tell the user to screenshot it, wait for Enter,
+# then copy the last screenshot into $SHOT_DIR as the given name.
+capture() {
+  name="$1"; shift
+  echo
+  prompt "Do this:"
+  echo "  $*"
+  echo
+  prompt "Take a screenshot now (Volume Down + Power), then press Enter."
+  read -r _
+  src=$(latest_screenshot)
+  if [ -n "$src" ]; then
+    cp "$src" "$SHOT_DIR/$name"
+    echo "  -> saved: docs/screenshots/$name"
+  else
+    prompt "No .png found in /sdcard/Pictures/. Did you grant storage permission?"
+    prompt "Run: termux-setup-storage"
+  fi
+}
 
-note "Step 1: capture clean terminal"
-clear; sleep 1
-capture 00-clean-terminal.png
+clear
+note "Step 1/7: Clean terminal"
+capture 00-clean-terminal.png clear
 
-note "Step 2: run installer (visible output)"
-# Re-running is safe. Use the local install.sh if we're in the repo,
-# otherwise fetch from GitHub.
+note "Step 2/7: Install opencode"
 if [ -x "$REPO_DIR/install.sh" ]; then
   sh "$REPO_DIR/install.sh"
 else
   curl -fsSL "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh" | sh
 fi
-capture 01-install-complete.png
+capture 01-install-complete.png echo
 
-note "Step 3: opencode --version"
-clear
+note "Step 3/7: opencode --version"
 echo '$ opencode --version'
-if command -v opencode >/dev/null 2>&1; then
-  opencode --version
-  echo
-  echo '$ which opencode'
-  which opencode
-else
-  echo 'opencode: command not found (install step failed?)'
-fi
-sleep 0.5
-capture 02-version-check.png
+opencode --version
+echo
+echo '$ which opencode'
+which opencode
+capture 02-version-check.png echo
 
-note "Step 4: installed files"
-clear
+note "Step 4/7: Installed files"
 echo '$ ls -la $PREFIX/lib/ld-musl* $PREFIX/lib/libstdc++* $PREFIX/lib/libgcc*'
 ls -la "$PREFIX/lib/ld-musl"* "$PREFIX/lib/libstdc++"* "$PREFIX/lib/libgcc"* 2>&1
-sleep 0.5
-capture 03-installed-files.png
+capture 03-installed-files.png echo
 
-note "Step 5: ELF interpreter + NEEDED"
-clear
-BIN="$PREFIX/libexec/opencode/opencode-musl.bin"
-echo "\$ readelf -l $BIN | grep -A1 INTERP"
-readelf -l "$BIN" 2>/dev/null | grep -A1 INTERP
+note "Step 5/7: ELF interpreter + DT_NEEDED"
+echo '$ readelf -l $PREFIX/libexec/opencode/opencode-musl.bin | grep -A1 INTERP'
+readelf -l "$PREFIX/libexec/opencode/opencode-musl.bin" 2>/dev/null | grep -A1 INTERP
 echo
-echo "\$ readelf -d $BIN | grep NEEDED"
-readelf -d "$BIN" 2>/dev/null | grep NEEDED
-sleep 0.5
-capture 04-elf-interpreter.png
+echo '$ readelf -d $PREFIX/libexec/opencode/opencode-musl.bin | grep NEEDED'
+readelf -d "$PREFIX/libexec/opencode/opencode-musl.bin" 2>/dev/null | grep NEEDED
+capture 04-elf-interpreter.png echo
 
-note "Step 6: launching opencode TUI"
-clear
+note "Step 6/7: opencode TUI"
 echo '$ opencode'
 echo
-echo 'opencode will launch. Let the TUI render, then press "q"'
-echo 'inside opencode to quit. The script will capture the TUI'
-echo 'before the quit and continue.'
+prompt "opencode will launch. Let it render, then take a screenshot."
+prompt "After the screenshot, press 'q' inside opencode to quit."
+opencode
+capture 05-opencode-tui.png echo
+
+note "Step 7/7: Done"
 echo
-sleep 2
-# Launch in the background, capture mid-render, then signal-quit it.
-# opencode responds to SIGINT (Ctrl-C) by exiting cleanly; if it
-# doesn't, escalate to SIGTERM then SIGKILL.
-( opencode >/dev/null 2>&1 ) &
-OPENCODE_PID=$!
-sleep 5
-capture 05-opencode-tui.png
-kill -INT $OPENCODE_PID 2>/dev/null || true
-sleep 1
-kill -TERM $OPENCODE_PID 2>/dev/null || true
-sleep 1
-kill -KILL $OPENCODE_PID 2>/dev/null || true
-wait $OPENCODE_PID 2>/dev/null || true
-sleep 1
-clear
-echo "TUI demo finished."
-
-note "Step 7: moving screenshots into repo"
-mv "$TMP_DIR"/*.png "$SHOT_DIR/"
-rmdir "$TMP_DIR"
-
-note "Done. Screenshots in $SHOT_DIR:"
+echo "Screenshots saved to docs/screenshots/:"
 ls -la "$SHOT_DIR"
