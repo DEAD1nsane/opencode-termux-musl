@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
-"""Simple HTTP proxy for opencode on Android.
-Binds to 127.0.0.1:8080 and forwards all requests to the target API.
+"""Fast HTTP proxy for opencode on Android.
+Bun's io_uring networking doesn't work on Android, so we route
+API requests through this Python proxy on localhost.
 """
 import http.server
 import urllib.request
 import ssl
 import sys
 import os
+import socket
 
 TARGET = os.environ.get("PROXY_TARGET", "https://opencode.ai")
 PORT = int(os.environ.get("PROXY_PORT", "8080"))
+
+# Reuse a single SSL context and opener
+ctx = ssl.create_default_context()
+opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
 
 class ProxyHandler(http.server.BaseHTTPRequestHandler):
     def do_request(self):
@@ -19,18 +25,22 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         url = TARGET + self.path
         req = urllib.request.Request(url, data=body, method=self.command)
         for key, val in self.headers.items():
-            if key.lower() not in ('host', 'proxy-connection'):
+            if key.lower() not in ('host', 'proxy-connection', 'accept-encoding'):
                 req.add_header(key, val)
 
-        ctx = ssl.create_default_context()
         try:
-            resp = urllib.request.urlopen(req, context=ctx, timeout=60)
+            resp = opener.open(req, timeout=120)
             self.send_response(resp.status)
             for key, val in resp.getheaders():
                 if key.lower() not in ('transfer-encoding',):
                     self.send_header(key, val)
             self.end_headers()
-            self.wfile.write(resp.read())
+            while True:
+                chunk = resp.read(65536)
+                if not chunk:
+                    break
+                self.wfile.write(chunk)
+                self.wfile.flush()
         except urllib.error.HTTPError as e:
             self.send_response(e.code)
             for key, val in e.headers.items():
@@ -50,12 +60,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
     do_DELETE = do_request
 
     def do_GET(self):
-        if self.path == '/health':
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'ok')
-        else:
-            self.do_request()
+        self.do_request()
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -65,11 +70,11 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        sys.stderr.write(f"[proxy] {args[0]}\n")
+        pass
+
+    def connectionMade(self):
+        pass
 
 if __name__ == '__main__':
-    import logging
-    logging.disable(logging.CRITICAL)
     server = http.server.HTTPServer(('127.0.0.1', PORT), ProxyHandler)
     server.serve_forever()
-
