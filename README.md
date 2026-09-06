@@ -72,6 +72,36 @@ Known limitations:
 
 - Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string. TUI hasn't been re-tested since the install URL was filled in; reports welcome.
 
+## Verifying an install
+
+A non-interactive smoke test is included at `scripts/smoke-test.sh`. It
+runs `install.sh` into a throwaway `$PREFIX`, then verifies the binary's
+ELF interpreter, `DT_NEEDED` resolution, and `--version`:
+
+```sh
+./scripts/smoke-test.sh
+```
+
+## Capturing screenshots
+
+`scripts/capture-screenshots.sh` drives the full install + TUI demo and
+saves PNGs into `docs/screenshots/`. **Run it from the Termux app
+directly** (not from opencode or another agent) so that `screencap`
+captures the terminal:
+
+```sh
+./scripts/capture-screenshots.sh
+```
+
+It produces:
+
+- `00-clean-terminal.png`
+- `01-install-complete.png`
+- `02-version-check.png`
+- `03-installed-files.png`
+- `04-elf-interpreter.png`
+- `05-opencode-tui.png`
+
 ## Credits
 
 - [opencode](https://github.com/anomalyco/opencode) by Anomaly
