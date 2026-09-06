@@ -125,7 +125,8 @@ opencode2 --version
 - Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string, TUI launches and connects to API through the proxy.
 - v2 (`opencode2 v0.0.0-beta-19192`) runs on the same device using the musl loader from this project.
 
-## Screenshots
+<details>
+<summary><strong>Screenshots</strong> (click to expand)</summary>
 
 | Step | Screenshot |
 |------|------------|
@@ -137,6 +138,8 @@ opencode2 --version
 | opencode TUI | ![opencode TUI](docs/screenshots/05-opencode-tui.png) |
 | Running opencode | ![Running opencode](docs/screenshots/06-opencode-working.png) |
 | Newest version | ![Newest version](docs/screenshots/07-opencode-newest-version.png) |
+
+</details>
 
 ## Credits
 
