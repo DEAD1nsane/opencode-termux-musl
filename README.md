@@ -46,17 +46,22 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
 5. Builds and installs `libresolvefix.so` — an LD_PRELOAD shim that:
    - Redirects musl's `/etc/resolv.conf` reads to Termux's copy at `$PREFIX/etc/resolv.conf`
    - Forwards `getaddrinfo()` to bionic's resolver (via `dlopen`) so DNS works through Android's `netd` daemon
-6. Installs a local HTTP proxy (`proxy.py`) — Bun's io_uring-based networking doesn't work on Android, so API requests are routed through a Python proxy on `127.0.0.1:8080`
+6. Installs a local HTTP proxy (`proxy.py`) — Bun's io_uring-based networking doesn't work on Android, so all outbound traffic (API requests, webfetch, websearch, model registry, plugin installs, etc.) is routed through a Python proxy on `127.0.0.1:8080`
 7. Installs a wrapper that:
    - Clears any stale `LD_PRELOAD` from the previous (guysoft) wrapper — that shim references glibc-only symbols (`__register_atfork`, `__errno`, `__strlen_chk`, etc.) that don't exist in musl
    - Loads `libresolvefix.so` for DNS resolution
    - Auto-starts the HTTP proxy if not running
+   - Sets `HTTP_PROXY`/`HTTPS_PROXY` so Bun routes all connections through the proxy
    - Sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`, TLS cert paths
    - Runs the binary against the musl loader in `$PREFIX/lib`
 
 ### Why a proxy?
 
-Bun uses [io_uring](https://kernel.dk/io_uring.pdf) for async networking (DNS, TCP, TLS) on Linux. On Android, io_uring is either unavailable or broken — all outbound connections fail with "Unable to connect". The Python proxy works because it uses standard libc sockets (bionic's `connect()`/`sendto()`) which go through Android's normal networking stack. The proxy listens on `127.0.0.1:8080` and forwards to `https://opencode.ai`.
+Bun uses [io_uring](https://kernel.dk/io_uring.pdf) for async networking (DNS, TCP, TLS) on Linux. On Android, io_uring is either unavailable or broken — all outbound connections fail with "Unable to connect". The Python proxy works because it uses standard libc sockets (bionic's `connect()`/`sendto()`) which go through Android's normal networking stack. The proxy supports three modes:
+
+1. **Fixed-target reverse proxy** (for the opencode.ai API): requests to `127.0.0.1:8080` are forwarded to `https://opencode.ai<path>`
+2. **Absolute-URL forward proxy**: when Bun sends `GET http://...` requests (because `HTTP_PROXY` is set), the proxy extracts the target URL and forwards
+3. **HTTP CONNECT tunnel**: for HTTPS targets, the proxy establishes a TCP tunnel to the remote host and pipes bytes both ways
 
 ### Why `libresolvefix.so`?
 
@@ -80,16 +85,45 @@ Known limitations:
 - **PTY support**: depends on `librust_pty_arm64.so`. The guysoft build ships this; we don't yet. PRs welcome.
 - **Startup latency**: the Python HTTP proxy adds ~100-200ms per request. Acceptable for interactive use.
 
+## OpenCode v2 (beta)
+
+OpenCode v2 is a major rewrite that replaces Bun with Node.js as the JavaScript runtime. The v2 musl binary (`linux-arm64-musl`) works on Termux with the same musl loader used by this project — and it's significantly simpler since it doesn't need the Bun/io_uring proxy workaround.
+
+**Tested and confirmed working**: `opencode2 v0.0.0-beta-19192` runs on Termux aarch64.
+
+```sh
+# Install v2 side-by-side with v1 (beta — requires --force to bypass OS check)
+npm install -g @opencode-ai/cli@beta --force
+
+# Run
+opencode2 --version
+```
+
+**Why --force?** The npm package doesn't declare `android` as a supported OS, so npm rejects the install. Use `--force` to bypass.
+
+**v1 vs v2 on Termux:**
+
+| | v1 (stable) | v2 (beta) |
+|---|---|---|
+| Runtime | Bun | Node.js |
+| Proxy needed | Yes (io_uring broken on Android) | No |
+| libresolvefix needed | Yes (musl DNS) | Yes (musl DNS) |
+| Install method | `install.sh` (this project) | `npm install -g --force` |
+| Status | Stable, production-ready | Beta, untested long-term |
+
+**Status**: v2 works but is still in beta. This project remains the stable solution for v1. If v2 reaches stable and works reliably on Android, this project may become unnecessary — but until then, the proxy approach is the only confirmed way to run opencode on Termux.
+
 ## Requirements
 
 - Termux (Android 7.0+ / API 24+, aarch64)
 - `curl`, `tar`, `patchelf`, `clang` (installer will install `patchelf` and `clang` automatically if missing)
-- `python3` (for the HTTP proxy)
+- `python3` (for the HTTP proxy — v1 only)
 - Internet access to `github.com`, `dl-cdn.alpinelinux.org`, and `opencode.ai`
 
 ## Tested on
 
 - Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string, TUI launches and connects to API through the proxy.
+- v2 (`opencode2 v0.0.0-beta-19192`) runs on the same device using the musl loader from this project.
 
 ## Screenshots
 
@@ -101,6 +135,8 @@ Known limitations:
 | Installed files | ![Installed files](docs/screenshots/03-installed-files.png) |
 | ELF interpreter | ![ELF interpreter](docs/screenshots/04-elf-interpreter.png) |
 | opencode TUI | ![opencode TUI](docs/screenshots/05-opencode-tui.png) |
+| Running opencode | ![Running opencode](docs/screenshots/06-opencode-working.png) |
+| Newest version | ![Newest version](docs/screenshots/07-opencode-newest-version.png) |
 
 ## Credits
 
