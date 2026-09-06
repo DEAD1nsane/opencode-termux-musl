@@ -72,8 +72,9 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def connectionMade(self):
+        pass
+
 if __name__ == '__main__':
-    sys.stdout = open(os.devnull, 'w')
-    sys.stderr = open(os.devnull, 'w')
     server = http.server.HTTPServer(('127.0.0.1', PORT), ProxyHandler)
     server.serve_forever()
