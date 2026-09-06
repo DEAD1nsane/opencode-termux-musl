@@ -31,7 +31,6 @@ static const char *redirect(const char *p) {
 
 int open(const char *pathname, int flags, ...) {
     int (*real_open)(const char *, int, ...) = dlsym(RTLD_NEXT, "open");
-    if (!real_open) return -1;
     const char *p = redirect(pathname);
     if (flags & (O_CREAT | O_TMPFILE)) {
         va_list ap;
@@ -45,7 +44,6 @@ int open(const char *pathname, int flags, ...) {
 
 FILE *fopen(const char *pathname, const char *mode) {
     FILE *(*real_fopen)(const char *, const char *) = dlsym(RTLD_NEXT, "fopen");
-    if (!real_fopen) return NULL;
     return real_fopen(redirect(pathname), mode);
 }
 
@@ -80,7 +78,6 @@ int getaddrinfo(const char *node, const char *service,
     }
     bionic_getaddrinfo_fn real =
         (bionic_getaddrinfo_fn)dlsym(RTLD_NEXT, "getaddrinfo");
-    if (!real) return EAI_SYSTEM;
     return real(node, service, hints, res);
 }
 
@@ -93,7 +90,7 @@ void freeaddrinfo(struct addrinfo *res) {
     }
     bionic_freeaddrinfo_fn real =
         (bionic_freeaddrinfo_fn)dlsym(RTLD_NEXT, "freeaddrinfo");
-    if (real) real(res);
+    real(res);
 }
 
 const char *gai_strerror(int errcode) {
@@ -105,5 +102,5 @@ const char *gai_strerror(int errcode) {
     }
     bionic_gai_strerror_fn real =
         (bionic_gai_strerror_fn)dlsym(RTLD_NEXT, "gai_strerror");
-    return real ? real(errcode) : "unknown error";
+    return real(errcode);
 }
