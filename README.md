@@ -51,6 +51,7 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
    - Clears any stale `LD_PRELOAD` from the previous (guysoft) wrapper — that shim references glibc-only symbols (`__register_atfork`, `__errno`, `__strlen_chk`, etc.) that don't exist in musl
    - Loads `libresolvefix.so` for DNS resolution
    - Auto-starts the HTTP proxy if not running
+   - Sets `HTTP_PROXY`/`HTTPS_PROXY` so Bun routes all connections through the proxy
    - Sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`, TLS cert paths
    - Runs the binary against the musl loader in `$PREFIX/lib`
 
@@ -59,7 +60,7 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
 Bun uses [io_uring](https://kernel.dk/io_uring.pdf) for async networking (DNS, TCP, TLS) on Linux. On Android, io_uring is either unavailable or broken — all outbound connections fail with "Unable to connect". The Python proxy works because it uses standard libc sockets (bionic's `connect()`/`sendto()`) which go through Android's normal networking stack. The proxy supports three modes:
 
 1. **Fixed-target reverse proxy** (for the opencode.ai API): requests to `127.0.0.1:8080` are forwarded to `https://opencode.ai<path>`
-2. **Absolute-URL forward proxy**: when Bun sends `GET http://...` requests, the proxy extracts the target URL and forwards
+2. **Absolute-URL forward proxy**: when Bun sends `GET http://...` requests (because `HTTP_PROXY` is set), the proxy extracts the target URL and forwards
 3. **HTTP CONNECT tunnel**: for HTTPS targets, the proxy establishes a TCP tunnel to the remote host and pipes bytes both ways
 
 ### Why `libresolvefix.so`?
@@ -124,21 +125,18 @@ opencode2 --version
 - Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string, TUI launches and connects to API through the proxy.
 - v2 (`opencode2 v0.0.0-beta-19192`) runs on the same device using the musl loader from this project.
 
-<details>
-<summary><strong>Screenshots</strong> (click to expand)</summary>
+## Screenshots
 
 | Step | Screenshot |
 |------|------------|
-| Clean terminal | <img src="docs/screenshots/00-clean-terminal.png" width="300" alt="Clean terminal"> |
-| Install opencode | <img src="docs/screenshots/01-install-complete.png" width="300" alt="Install opencode"> |
-| Version check | <img src="docs/screenshots/02-version-check.png" width="300" alt="Version check"> |
-| Installed files | <img src="docs/screenshots/03-installed-files.png" width="300" alt="Installed files"> |
-| ELF interpreter | <img src="docs/screenshots/04-elf-interpreter.png" width="300" alt="ELF interpreter"> |
-| opencode TUI | <img src="docs/screenshots/05-opencode-tui.png" width="300" alt="opencode TUI"> |
-| Running opencode | <img src="docs/screenshots/06-opencode-working.png" width="300" alt="Running opencode"> |
-| Newest version | <img src="docs/screenshots/07-opencode-newest-version.png" width="300" alt="Newest version"> |
-
-</details>
+| Clean terminal | ![Clean terminal](docs/screenshots/00-clean-terminal.png) |
+| Install opencode | ![Install opencode](docs/screenshots/01-install-complete.png) |
+| Version check | ![Version check](docs/screenshots/02-version-check.png) |
+| Installed files | ![Installed files](docs/screenshots/03-installed-files.png) |
+| ELF interpreter | ![ELF interpreter](docs/screenshots/04-elf-interpreter.png) |
+| opencode TUI | ![opencode TUI](docs/screenshots/05-opencode-tui.png) |
+| Running opencode | ![Running opencode](docs/screenshots/06-opencode-working.png) |
+| Newest version | ![Newest version](docs/screenshots/07-opencode-newest-version.png) |
 
 ## Credits
 
