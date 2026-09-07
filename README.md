@@ -23,7 +23,7 @@ The much simpler approach: take upstream's `opencode-linux-arm64-musl.tar.gz`, s
 On Termux:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
 ```
 
 After it finishes, the wrapper prints the installed opencode version (whatever upstream's current release is).
