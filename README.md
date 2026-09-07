@@ -51,7 +51,6 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
    - Clears any stale `LD_PRELOAD` from the previous (guysoft) wrapper — that shim references glibc-only symbols (`__register_atfork`, `__errno`, `__strlen_chk`, etc.) that don't exist in musl
    - Loads `libresolvefix.so` for DNS resolution
    - Auto-starts the HTTP proxy if not running
-   - Sets `HTTP_PROXY`/`HTTPS_PROXY` so Bun routes all connections through the proxy
    - Sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`, TLS cert paths
    - Runs the binary against the musl loader in `$PREFIX/lib`
 
@@ -60,7 +59,7 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
 Bun uses [io_uring](https://kernel.dk/io_uring.pdf) for async networking (DNS, TCP, TLS) on Linux. On Android, io_uring is either unavailable or broken — all outbound connections fail with "Unable to connect". The Python proxy works because it uses standard libc sockets (bionic's `connect()`/`sendto()`) which go through Android's normal networking stack. The proxy supports three modes:
 
 1. **Fixed-target reverse proxy** (for the opencode.ai API): requests to `127.0.0.1:8080` are forwarded to `https://opencode.ai<path>`
-2. **Absolute-URL forward proxy**: when Bun sends `GET http://...` requests (because `HTTP_PROXY` is set), the proxy extracts the target URL and forwards
+2. **Absolute-URL forward proxy**: when Bun sends `GET http://...` requests, the proxy extracts the target URL and forwards
 3. **HTTP CONNECT tunnel**: for HTTPS targets, the proxy establishes a TCP tunnel to the remote host and pipes bytes both ways
 
 ### Why `libresolvefix.so`?
