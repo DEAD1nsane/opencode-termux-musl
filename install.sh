@@ -6,7 +6,7 @@
 # patches the binary's interpreter, and installs everything under $PREFIX.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
 # Or after cloning:
 #   ./install.sh
 #
@@ -119,7 +119,7 @@ if [ -f "$SCRIPT_DIR/scripts/libresolvefix.c" ]; then
   cp "$SCRIPT_DIR/scripts/libresolvefix.c" "$RESOLVEFIX_SRC"
 else
   curl -fsSL -o "$RESOLVEFIX_SRC" \
-    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/libresolvefix.c" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/libresolvefix.c" \
     || die "Could not download libresolvefix.c"
 fi
 clang -shared -fPIC -o "$WORK/libresolvefix.so" "$RESOLVEFIX_SRC" \
@@ -136,7 +136,7 @@ if [ -f "$SCRIPT_DIR/scripts/proxy.py" ]; then
   cp "$SCRIPT_DIR/scripts/proxy.py" "$PROXY_SRC"
 else
   curl -fsSL -o "$PROXY_SRC" \
-    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/proxy.py" \
+    "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/scripts/proxy.py" \
     || die "Could not download proxy.py"
 fi
 install -d "$PREFIX/libexec/opencode"
@@ -203,10 +203,6 @@ export OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true
 export SSL_CERT_FILE="$PREFIX/etc/tls/cert.pem"
 export NODE_EXTRA_CA_CERTS="$PREFIX/etc/tls/cert.pem"
 export CURL_CA_BUNDLE="$PREFIX/etc/tls/cert.pem"
-export HTTP_PROXY="http://127.0.0.1:8080"
-export http_proxy="http://127.0.0.1:8080"
-export HTTPS_PROXY="http://127.0.0.1:8080"
-export https_proxy="http://127.0.0.1:8080"
 
 # Start the HTTP proxy if not already running.
 # Bun's io_uring networking doesn't work on Android, so API requests

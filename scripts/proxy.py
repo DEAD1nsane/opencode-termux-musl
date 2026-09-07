@@ -86,15 +86,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(str(e).encode())
 
     def do_request(self):
-        target = self._absolute_target()
-        if target and "127.0.0.1:8080" in target:
-            from urllib.parse import urlparse
-            parsed = urlparse(target)
-            target = TARGET + parsed.path
-            if parsed.query:
-                target += "?" + parsed.query
-        elif not target:
-            target = TARGET + self.path
+        target = self._absolute_target() or (TARGET + self.path)
         self._forward(target, None)
 
     def do_CONNECT(self):

@@ -23,7 +23,7 @@ The much simpler approach: take upstream's `opencode-linux-arm64-musl.tar.gz`, s
 On Termux:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/main/install.sh | sh
 ```
 
 After it finishes, the wrapper prints the installed opencode version (whatever upstream's current release is).
@@ -51,8 +51,8 @@ The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/l
    - Clears any stale `LD_PRELOAD` from the previous (guysoft) wrapper — that shim references glibc-only symbols (`__register_atfork`, `__errno`, `__strlen_chk`, etc.) that don't exist in musl
    - Loads `libresolvefix.so` for DNS resolution
    - Auto-starts the HTTP proxy if not running
-   - Sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`, TLS cert paths
    - Sets `HTTP_PROXY`/`HTTPS_PROXY` so Bun routes all connections through the proxy
+   - Sets the env vars opencode needs on Android: `TERM` for the TUI, `OPENCODE_DISABLE_TUI_AUDIO=1`, `OPENCODE_EXPERIMENTAL_DISABLE_FILEWATCHER=true`, TLS cert paths
    - Runs the binary against the musl loader in `$PREFIX/lib`
 
 ### Why a proxy?
