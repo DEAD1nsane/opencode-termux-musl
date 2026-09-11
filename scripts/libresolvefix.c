@@ -70,22 +70,15 @@ typedef const char *(*bionic_gai_strerror_fn)(int);
 int getaddrinfo(const char *node, const char *service,
                 const struct addrinfo *hints, struct addrinfo **res) {
     ensure_bionic();
-    bionic_getaddrinfo_fn real = NULL;
-    if (bionic_lib)
-        real = (bionic_getaddrinfo_fn)dlsym(bionic_lib, "getaddrinfo");
-    if (!real)
-        real = (bionic_getaddrinfo_fn)dlsym(RTLD_NEXT, "getaddrinfo");
-
-    /* Force IPv4 if no family preference specified (Android IPv6 often broken) */
-    struct addrinfo modified;
-    const struct addrinfo *use_hints = hints;
-    if (hints && hints->ai_family == AF_UNSPEC) {
-        modified = *hints;
-        modified.ai_family = AF_INET;
-        use_hints = &modified;
+    if (bionic_lib) {
+        bionic_getaddrinfo_fn real =
+            (bionic_getaddrinfo_fn)dlsym(bionic_lib, "getaddrinfo");
+        if (real)
+            return real(node, service, hints, res);
     }
-
-    return real(node, service, use_hints, res);
+    bionic_getaddrinfo_fn real =
+        (bionic_getaddrinfo_fn)dlsym(RTLD_NEXT, "getaddrinfo");
+    return real(node, service, hints, res);
 }
 
 void freeaddrinfo(struct addrinfo *res) {
