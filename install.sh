@@ -207,6 +207,8 @@ export HTTP_PROXY="http://127.0.0.1:8080"
 export http_proxy="http://127.0.0.1:8080"
 export HTTPS_PROXY="http://127.0.0.1:8080"
 export https_proxy="http://127.0.0.1:8080"
+export NO_PROXY="localhost,127.0.0.1"
+export no_proxy="localhost,127.0.0.1"
 
 # Start the HTTP proxy if not already running.
 # Bun's io_uring networking doesn't work on Android, so API requests
@@ -222,3 +224,31 @@ chmod +x "$PREFIX/bin/$INSTALL_NAME"
 
 log "Done. Try: $INSTALL_NAME --version"
 "$PREFIX/bin/$INSTALL_NAME" --version
+
+# --- Optional: fix opencode2 wrapper if v2 is installed ---
+V2_BIN="$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe"
+if [ -f "$V2_BIN" ]; then
+  printf '\n'
+  warn "OpenCode v2 (beta) detected at $V2_BIN"
+  warn "The npm-installed v2 wrapper has a recursive self-call bug that"
+  warn "causes crashes and can break v1's proxy."
+  printf 'Fix the v2 wrapper? [y/N] '
+  read -r REPLY </dev/tty
+  case "$REPLY" in
+    [yY][eE][sS]|[yY])
+      FIX_SRC="$WORK/fix-opencode2-wrapper.sh"
+      if [ -f "$SCRIPT_DIR/scripts/fix-opencode2-wrapper.sh" ]; then
+        cp "$SCRIPT_DIR/scripts/fix-opencode2-wrapper.sh" "$FIX_SRC"
+      else
+        curl -fsSL -o "$FIX_SRC" \
+          "https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/fix-opencode2-wrapper.sh" \
+          || die "Could not download fix-opencode2-wrapper.sh"
+      fi
+      sh "$FIX_SRC"
+      ;;
+    *)
+      log "Skipping v2 fix. You can run it later:"
+      log "  curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/fix-opencode2-wrapper.sh | sh"
+      ;;
+  esac
+fi

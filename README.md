@@ -76,6 +76,36 @@ The other Termux build ([guysoft/opencode-termux](https://github.com/guysoft/ope
 
 This build is **musl-linked**. opencode's allocations go through musl's allocator, which does not tag pointers. The shim is therefore unnecessary here, and shipping a Bionic-targeted `.so` under a musl process would either fail to load (different libc resolution) or cause a libc-mismatch corruption. If you do hit a "Pointer tag" crash, the cause is different (e.g. kernel-level tagged-address enforcement on `ioctl`/`prctl` from a JSC path) and would need to be fixed in JSC's syscall wrappers upstream, not in userspace.
 
+## Using with local models (Ollama)
+
+The stable version (v1) can work with local models from Ollama. The wrapper now sets `NO_PROXY=localhost,127.0.0.1` to bypass the proxy for local connections.
+
+1. Install and start Ollama in Termux:
+   ```sh
+   pkg install ollama
+   ollama serve &
+   ollama pull llama3
+   ```
+
+2. Configure opencode to use Ollama (in `~/.config/opencode/config.json`):
+   ```json
+   {
+     "provider": {
+       "ollama": {
+         "endpoint": "http://localhost:11434",
+         "model": "llama3"
+       }
+     }
+   }
+   ```
+
+3. Run opencode:
+   ```sh
+   opencode
+   ```
+
+**Note**: v2 (beta) doesn't need the proxy and works with Ollama out of the box.
+
 ## What's not working
 
 Known limitations:
@@ -91,15 +121,31 @@ OpenCode v2 is a major rewrite that replaces Bun with Node.js as the JavaScript 
 
 **Tested and confirmed working**: `opencode2 v0.0.0-beta-19192` runs on Termux aarch64.
 
+### Install v2
+
 ```sh
 # Install v2 side-by-side with v1 (beta — requires --force to bypass OS check)
 npm install -g @opencode-ai/cli@beta --force
+
+# Fix the wrapper (required — the npm-installed wrapper has a bug)
+curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/fix-opencode2-wrapper.sh | sh
 
 # Run
 opencode2 --version
 ```
 
 **Why --force?** The npm package doesn't declare `android` as a supported OS, so npm rejects the install. Use `--force` to bypass.
+
+### v2 wrapper bug
+
+The npm postinstall script generates a wrapper that has a **recursive self-call bug** — it execs itself instead of `opencode2.exe`, causing infinite recursion and crashes. It also unnecessarily starts the Python proxy (v2 is Node.js-based and doesn't need it), which can break v1.
+
+The fix script (`scripts/fix-opencode2-wrapper.sh`) creates a correct wrapper that:
+- Sets up the musl loader and DNS resolution shim
+- Does NOT start the proxy (v2 doesn't need it)
+- Execs `opencode2.exe` directly
+
+If you ran `install.sh` with v2 already installed, it will prompt you to fix the wrapper automatically.
 
 **v1 vs v2 on Termux:**
 
@@ -108,7 +154,7 @@ opencode2 --version
 | Runtime | Bun | Node.js |
 | Proxy needed | Yes (io_uring broken on Android) | No |
 | libresolvefix needed | Yes (musl DNS) | Yes (musl DNS) |
-| Install method | `install.sh` (this project) | `npm install -g --force` |
+| Install method | `install.sh` (this project) | `npm install -g --force` + wrapper fix |
 | Status | Stable, production-ready | Beta, untested long-term |
 
 **Status**: v2 works but is still in beta. This project remains the stable solution for v1. If v2 reaches stable and works reliably on Android, this project may become unnecessary — but until then, the proxy approach is the only confirmed way to run opencode on Termux.

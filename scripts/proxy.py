@@ -93,7 +93,10 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             target = TARGET + parsed.path
             if parsed.query:
                 target += "?" + parsed.query
-        elif not target:
+        elif target:
+            # Forward other absolute URLs as-is (e.g. localhost:11434 for Ollama)
+            pass
+        else:
             target = TARGET + self.path
         self._forward(target, None)
 
