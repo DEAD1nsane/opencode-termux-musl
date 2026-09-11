@@ -71,11 +71,12 @@ else
 fi
 
 # Create the wrapper script.
-log "Creating opencode2 wrapper at $PREFIX/bin/opencode2..."
+# NOTE: npm recreates $PREFIX/bin/opencode2 as a symlink to the ELF binary
+# on every install, so we use a different name to avoid conflicts.
+WRAPPER_NAME="opencode2-termux"
+log "Creating wrapper at $PREFIX/bin/$WRAPPER_NAME..."
 install -d "$PREFIX/bin"
-# Remove any symlink that npm may have created (points to the ELF binary).
-[ -L "$PREFIX/bin/opencode2" ] && rm "$PREFIX/bin/opencode2"
-cat > "$PREFIX/bin/opencode2" <<'WRAPPER'
+cat > "$PREFIX/bin/$WRAPPER_NAME" <<'WRAPPER'
 #!/data/data/com.termux/files/usr/bin/sh
 # opencode2 wrapper for the upstream musl-linked build (v2 / Node.js).
 #
@@ -110,7 +111,7 @@ export NODE_OPTIONS="--dns-result-order=ipv4first"
 
 exec "$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe" --standalone "$@"
 WRAPPER
-chmod +x "$PREFIX/bin/opencode2"
+chmod +x "$PREFIX/bin/$WRAPPER_NAME"
 
-log "Done. Try: opencode2 --version"
-"$PREFIX/bin/opencode2" --version
+log "Done. Try: $WRAPPER_NAME --version"
+"$PREFIX/bin/$WRAPPER_NAME" --version
