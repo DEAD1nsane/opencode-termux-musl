@@ -88,6 +88,7 @@ export SSL_CERT_FILE="$PREFIX/etc/tls/cert.pem"
 export NODE_EXTRA_CA_CERTS="$PREFIX/etc/tls/cert.pem"
 export NO_PROXY="localhost,127.0.0.1"
 export no_proxy="localhost,127.0.0.1"
+export NODE_OPTIONS="--dns-result-order=ipv4first"
 
 exec "$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe" "$@"
 WRAPPER
