@@ -90,7 +90,7 @@ export NO_PROXY="localhost,127.0.0.1"
 export no_proxy="localhost,127.0.0.1"
 export NODE_OPTIONS="--dns-result-order=ipv4first"
 
-exec "$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe" "$@"
+exec "$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe" --standalone "$@"
 WRAPPER
 chmod +x "$PREFIX/bin/opencode2"
 
