@@ -31,6 +31,22 @@ die()  { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 # Find the opencode2.exe binary.
 V2_BIN="$PREFIX/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe"
 [ -f "$V2_BIN" ] || die "opencode2 binary not found at $V2_BIN"
+
+# Check if it's actually an ELF binary or just the npm postinstall placeholder.
+V2_MAGIC=$(head -c 4 "$V2_BIN" 2>/dev/null | od -A n -t x1 | tr -d ' ')
+if [ "$V2_MAGIC" != "7f454c46" ]; then
+  warn "opencode2.exe is not a real binary (postinstall placeholder)."
+  warn "Installing the musl binary package..."
+  npm install -g --force --ignore-scripts @opencode-ai/cli-linux-arm64-musl 2>/dev/null \
+    || npm install -g --force --ignore-scripts @opencode-ai/cli-linux-arm64 2>/dev/null \
+    || die "Could not install musl binary. Try: npm install -g --force --ignore-scripts @opencode-ai/cli-linux-arm64-musl"
+  MUSL_BIN=$(npm root -g)/@opencode-ai/cli-linux-arm64-musl/bin/opencode2
+  [ -f "$MUSL_BIN" ] || MUSL_BIN=$(npm root -g)/@opencode-ai/cli-linux-arm64/bin/opencode2
+  [ -f "$MUSL_BIN" ] || die "Musl binary not found after install."
+  cp "$MUSL_BIN" "$V2_BIN"
+  log "Installed musl binary from npm package."
+fi
+
 log "Found opencode2 binary: $V2_BIN"
 
 # Patch the ELF interpreter to point at the installed musl loader.
