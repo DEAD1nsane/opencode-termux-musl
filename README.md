@@ -117,47 +117,63 @@ Known limitations:
 
 ## OpenCode v2 (beta)
 
-OpenCode v2 is a major rewrite that replaces Bun with Node.js as the JavaScript runtime. The v2 musl binary (`linux-arm64-musl`) works on Termux with the same musl loader used by this project — and it's significantly simpler since it doesn't need the Bun/io_uring proxy workaround.
+OpenCode v2 is a major rewrite that replaces Bun with Node.js as the JavaScript runtime.
 
-**Tested and confirmed working**: `opencode2 v0.0.0-beta-19192` runs on Termux aarch64.
+**⚠️ v2 does NOT work natively on Termux.** Node.js's c-ares DNS resolver bypasses `libresolvefix.so` — it does raw UDP DNS that Android blocks. Sending messages fails with `getaddrinfo ETIMEOUT`. The background server also freezes without `--standalone`.
 
-### Install v2
+**Solution:** Run v2 in proot Ubuntu where DNS works natively.
+
+### Install v2 (in proot Ubuntu)
 
 ```sh
-# Install v2 side-by-side with v1 (beta — requires --force to bypass OS check)
-npm install -g @opencode-ai/cli@beta --force
-
-# Fix the wrapper (required — the npm-installed wrapper has a bug)
-curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/scripts/fix-opencode2-wrapper.sh | sh
-
-# Run
-opencode2 --version
+# Install in proot Ubuntu (requires --ignore-scripts since npm doesn't support Android)
+proot-distro login ubuntu -- bash -c \
+  "npm install -g --force --ignore-scripts @opencode-ai/cli@beta && \
+   npm install -g --force --ignore-scripts @opencode-ai/cli-linux-arm64@beta && \
+   cp /usr/local/lib/node_modules/@opencode-ai/cli-linux-arm64/bin/opencode2 \
+      /usr/local/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe && \
+   chmod +x /usr/local/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe"
 ```
 
-**Why --force?** The npm package doesn't declare `android` as a supported OS, so npm rejects the install. Use `--force` to bypass.
+### Run v2
 
-### v2 wrapper bug
+```sh
+oc2-ubuntu          # Launch TUI (adds --standalone automatically)
+oc2-ubuntu --version
+oc2-ubuntu update --method npm   # Update inside proot
+```
 
-The npm postinstall script generates a wrapper that has a **recursive self-call bug** — it execs itself instead of `opencode2.exe`, causing infinite recursion and crashes. It also unnecessarily starts the Python proxy (v2 is Node.js-based and doesn't need it), which can break v1.
+### How `oc2-ubuntu` works
 
-The fix script (`scripts/fix-opencode2-wrapper.sh`) creates a correct wrapper that:
-- Sets up the musl loader and DNS resolution shim
-- Does NOT start the proxy (v2 doesn't need it)
-- Execs `opencode2.exe` directly
+The wrapper:
+1. Syncs your Termux config (themes, service.json, etc.) into proot Ubuntu
+2. Copies the real binary from `~/.opencode/bin/opencode` to the npm symlink target (fixes the postinstall placeholder)
+3. Runs `opencode2 --standalone` inside proot Ubuntu
 
-If you ran `install.sh` with v2 already installed, it will prompt you to fix the wrapper automatically.
+After `oc2-ubuntu update`, the wrapper automatically copies the real binary back so you can launch immediately.
 
-**v1 vs v2 on Termux:**
+### Update v2
 
-| | v1 (stable) | v2 (beta) |
+```sh
+oc2-ubuntu update --method npm
+```
+
+This runs `opencode2 update` inside proot Ubuntu. After it completes, the wrapper copies the real binary back. Then run `oc2-ubuntu` to launch.
+
+**Note:** The `opencode2 update` command uses npm internally and may install to `@opencode/cli` (without `-ai`). The wrapper handles this by copying the binary to both possible locations.
+
+### v1 vs v2
+
+| | v1 (stable) | v2 (beta via proot) |
 |---|---|---|
 | Runtime | Bun | Node.js |
+| Works on Termux | Yes (native) | No (needs proot Ubuntu) |
+| Install method | `install.sh` | `npm install` in proot |
+| Run command | `opencode` | `oc2-ubuntu` |
+| Update | `install.sh` (re-run) | `oc2-ubuntu update --method npm` |
 | Proxy needed | Yes (io_uring broken on Android) | No |
-| libresolvefix needed | Yes (musl DNS) | Yes (musl DNS) |
-| Install method | `install.sh` (this project) | `npm install -g --force` + wrapper fix |
-| Status | Stable, production-ready | Beta, untested long-term |
 
-**Status**: v2 works but is still in beta. This project remains the stable solution for v1. If v2 reaches stable and works reliably on Android, this project may become unnecessary — but until then, the proxy approach is the only confirmed way to run opencode on Termux.
+**Status**: v1 is stable and production-ready. v2 works via proot Ubuntu. This project remains the stable solution for v1.
 
 ## Requirements
 
@@ -169,7 +185,7 @@ If you ran `install.sh` with v2 already installed, it will prompt you to fix the
 ## Tested on
 
 - Pixel 10 (Android 17, Termux 0.119, aarch64) — installer completes, wrapper prints upstream's version string, TUI launches and connects to API through the proxy.
-- v2 (`opencode2 v0.0.0-beta-19192`) runs on the same device using the musl loader from this project.
+- v2 (`opencode2 v0.0.0-beta-19425`) runs in proot Ubuntu using `oc2-ubuntu`.
 
 <details>
 <summary><strong>Screenshots</strong> (click to expand)</summary>
