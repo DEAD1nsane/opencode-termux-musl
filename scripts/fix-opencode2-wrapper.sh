@@ -73,6 +73,8 @@ fi
 # Create the wrapper script.
 log "Creating opencode2 wrapper at $PREFIX/bin/opencode2..."
 install -d "$PREFIX/bin"
+# Remove any symlink that npm may have created (points to the ELF binary).
+[ -L "$PREFIX/bin/opencode2" ] && rm "$PREFIX/bin/opencode2"
 cat > "$PREFIX/bin/opencode2" <<'WRAPPER'
 #!/data/data/com.termux/files/usr/bin/sh
 # opencode2 wrapper for the upstream musl-linked build (v2 / Node.js).
