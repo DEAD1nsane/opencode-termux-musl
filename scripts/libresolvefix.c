@@ -42,6 +42,19 @@ int open(const char *pathname, int flags, ...) {
     return real_open(p, flags);
 }
 
+int openat(int dirfd, const char *pathname, int flags, ...) {
+    int (*real_openat)(int, const char *, int, ...) = dlsym(RTLD_NEXT, "openat");
+    const char *p = redirect(pathname);
+    if (flags & (O_CREAT | O_TMPFILE)) {
+        va_list ap;
+        va_start(ap, flags);
+        mode_t m = va_arg(ap, mode_t);
+        va_end(ap);
+        return real_openat(dirfd, p, flags, m);
+    }
+    return real_openat(dirfd, p, flags);
+}
+
 FILE *fopen(const char *pathname, const char *mode) {
     FILE *(*real_fopen)(const char *, const char *) = dlsym(RTLD_NEXT, "fopen");
     return real_fopen(redirect(pathname), mode);
