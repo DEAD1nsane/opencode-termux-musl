@@ -81,31 +81,37 @@ log "Using $MUSL_PKG, $LIBSTDC_PKG, $LIBGCC_PKG."
 log "Downloading upstream musl binary..."
 TARBALL="opencode-linux-arm64-musl.tar.gz"
 URL="https://github.com/$REPO/releases/download/$OPENCODE_VERSION/$TARBALL"
-if [ -n "$OPENCODE_TARBALL_PATH" ] && [ -f "$OPENCODE_TARBALL_PATH" ]; then
+if [ -n "$OPENCODE_TARBALL_PATH" ]; then
+  [ -f "$OPENCODE_TARBALL_PATH" ] || die "OPENCODE_TARBALL_PATH=$OPENCODE_TARBALL_PATH not found."
   log "Using local tarball: $OPENCODE_TARBALL_PATH (skipping download)"
   cp "$OPENCODE_TARBALL_PATH" "$WORK/$TARBALL"
 else
-  log "Hint: to download manually, run:"
-  log "  curl -L -C - -o $TARBALL $URL"
-  log "  then re-run with: OPENCODE_TARBALL_PATH=./$TARBALL ./install.sh"
-  curl -fL --progress-bar -o "$WORK/$TARBALL" "$URL" || die "Download failed: $URL"
+  if ! curl -fL --progress-bar -o "$WORK/$TARBALL" "$URL"; then
+    log "Hint: to download manually, run:"
+    log "  curl -L -C - -o $TARBALL $URL"
+    log "  then re-run with: OPENCODE_VERSION=$OPENCODE_VERSION OPENCODE_TARBALL_PATH=./$TARBALL ./install.sh"
+    die "Download failed: $URL"
+  fi
 fi
 
 # Download Alpine musl + C++ libs (or reuse local .apk files).
 log "Downloading musl libc + libstdc++/libgcc_s from Alpine..."
-if [ -n "$MUSL_PKG_PATH" ] && [ -f "$MUSL_PKG_PATH" ]; then
+if [ -n "$MUSL_PKG_PATH" ]; then
+  [ -f "$MUSL_PKG_PATH" ] || die "MUSL_PKG_PATH=$MUSL_PKG_PATH not found."
   log "Using local musl apk: $MUSL_PKG_PATH"
   cp "$MUSL_PKG_PATH" "$WORK/$MUSL_PKG"
 else
   curl -fL --progress-bar -o "$WORK/$MUSL_PKG"      "$ALPINE_BASE/$MUSL_PKG"      || die "musl download failed"
 fi
-if [ -n "$LIBSTDC_PKG_PATH" ] && [ -f "$LIBSTDC_PKG_PATH" ]; then
+if [ -n "$LIBSTDC_PKG_PATH" ]; then
+  [ -f "$LIBSTDC_PKG_PATH" ] || die "LIBSTDC_PKG_PATH=$LIBSTDC_PKG_PATH not found."
   log "Using local libstdc++ apk: $LIBSTDC_PKG_PATH"
   cp "$LIBSTDC_PKG_PATH" "$WORK/$LIBSTDC_PKG"
 else
   curl -fL --progress-bar -o "$WORK/$LIBSTDC_PKG"   "$ALPINE_BASE/$LIBSTDC_PKG"   || die "libstdc++ download failed"
 fi
-if [ -n "$LIBGCC_PKG_PATH" ] && [ -f "$LIBGCC_PKG_PATH" ]; then
+if [ -n "$LIBGCC_PKG_PATH" ]; then
+  [ -f "$LIBGCC_PKG_PATH" ] || die "LIBGCC_PKG_PATH=$LIBGCC_PKG_PATH not found."
   log "Using local libgcc apk: $LIBGCC_PKG_PATH"
   cp "$LIBGCC_PKG_PATH" "$WORK/$LIBGCC_PKG"
 else

@@ -81,6 +81,8 @@ Telegram saved messages.
 
 ### 1. Download the big tarball yourself (progress + resume)
 
+> **Note:** `v1.18.31` below is an example. Check `install.sh` output or [upstream releases](https://github.com/anomalyco/opencode/releases) for the current version tag.
+
 ```sh
 OPENCODE_VERSION=v1.18.31
 curl -L -C - --progress-bar \
