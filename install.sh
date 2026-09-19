@@ -12,6 +12,15 @@
 #
 # Re-running is safe: it always re-downloads the latest upstream release.
 #
+# Offline / manual download: if your connection drops (silent curl),
+# download the big (~62MB) tarball yourself — with resume + progress —
+# then feed it to the script:
+#   curl -L -C - -o opencode-linux-arm64-musl.tar.gz \
+#     https://github.com/anomalyco/opencode/releases/download/<VERSION>/opencode-linux-arm64-musl.tar.gz
+#   OPENCODE_VERSION=<VERSION> OPENCODE_TARBALL_PATH=./opencode-linux-arm64-musl.tar.gz ./install.sh
+# The 3 Alpine .apk files (~1.4MB total) can be fed the same way:
+#   MUSL_PKG_PATH=./musl-*.apk LIBSTDC_PKG_PATH=./libstdc++-*.apk LIBGCC_PKG_PATH=./libgcc-*.apk ./install.sh
+#
 # Requires: curl, tar (Termux has both by default).
 
 set -e
@@ -72,13 +81,36 @@ log "Using $MUSL_PKG, $LIBSTDC_PKG, $LIBGCC_PKG."
 log "Downloading upstream musl binary..."
 TARBALL="opencode-linux-arm64-musl.tar.gz"
 URL="https://github.com/$REPO/releases/download/$OPENCODE_VERSION/$TARBALL"
-curl -fsSL -o "$WORK/$TARBALL" "$URL" || die "Download failed: $URL"
+if [ -n "$OPENCODE_TARBALL_PATH" ] && [ -f "$OPENCODE_TARBALL_PATH" ]; then
+  log "Using local tarball: $OPENCODE_TARBALL_PATH (skipping download)"
+  cp "$OPENCODE_TARBALL_PATH" "$WORK/$TARBALL"
+else
+  log "Hint: to download manually, run:"
+  log "  curl -L -C - -o $TARBALL $URL"
+  log "  then re-run with: OPENCODE_TARBALL_PATH=./$TARBALL ./install.sh"
+  curl -fL --progress-bar -o "$WORK/$TARBALL" "$URL" || die "Download failed: $URL"
+fi
 
-# Download Alpine musl + C++ libs.
+# Download Alpine musl + C++ libs (or reuse local .apk files).
 log "Downloading musl libc + libstdc++/libgcc_s from Alpine..."
-curl -fsSL -o "$WORK/$MUSL_PKG"      "$ALPINE_BASE/$MUSL_PKG"      || die "musl download failed"
-curl -fsSL -o "$WORK/$LIBSTDC_PKG"   "$ALPINE_BASE/$LIBSTDC_PKG"   || die "libstdc++ download failed"
-curl -fsSL -o "$WORK/$LIBGCC_PKG"    "$ALPINE_BASE/$LIBGCC_PKG"    || die "libgcc download failed"
+if [ -n "$MUSL_PKG_PATH" ] && [ -f "$MUSL_PKG_PATH" ]; then
+  log "Using local musl apk: $MUSL_PKG_PATH"
+  cp "$MUSL_PKG_PATH" "$WORK/$MUSL_PKG"
+else
+  curl -fL --progress-bar -o "$WORK/$MUSL_PKG"      "$ALPINE_BASE/$MUSL_PKG"      || die "musl download failed"
+fi
+if [ -n "$LIBSTDC_PKG_PATH" ] && [ -f "$LIBSTDC_PKG_PATH" ]; then
+  log "Using local libstdc++ apk: $LIBSTDC_PKG_PATH"
+  cp "$LIBSTDC_PKG_PATH" "$WORK/$LIBSTDC_PKG"
+else
+  curl -fL --progress-bar -o "$WORK/$LIBSTDC_PKG"   "$ALPINE_BASE/$LIBSTDC_PKG"   || die "libstdc++ download failed"
+fi
+if [ -n "$LIBGCC_PKG_PATH" ] && [ -f "$LIBGCC_PKG_PATH" ]; then
+  log "Using local libgcc apk: $LIBGCC_PKG_PATH"
+  cp "$LIBGCC_PKG_PATH" "$WORK/$LIBGCC_PKG"
+else
+  curl -fL --progress-bar -o "$WORK/$LIBGCC_PKG"    "$ALPINE_BASE/$LIBGCC_PKG"    || die "libgcc download failed"
+fi
 
 # Extract everything.
 log "Extracting..."
