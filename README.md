@@ -35,6 +35,10 @@ opencode --version
 opencode
 ```
 
+> Full guide: [docs/INSTALL.md](docs/INSTALL.md) — download sizes,
+> what the script does, manual download / offline install, verify,
+> troubleshooting.
+
 ## How it works
 
 The upstream binary is dynamically linked. Its ELF interpreter points at `/lib/ld-musl-aarch64.so.1`, which Termux doesn't ship. The installer:
