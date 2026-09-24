@@ -4,6 +4,19 @@ Run the **upstream [opencode](https://github.com/anomalyco/opencode) CLI** on Te
 
 This is an alternative to [guysoft/opencode-termux](https://github.com/guysoft/opencode-termux), which cross-compiles Bun from source for Android and is pinned to opencode 1.17.9. This project avoids that build entirely.
 
+## Contents
+
+- [Why](#why)
+- [Install](#install)
+- [How it works](#how-it-works)
+- [Why no `libtagfix.so` shim](#why-no-libtagfixso-shim)
+- [Using with local models (Ollama)](#using-with-local-models-ollama)
+- [What's not working](#whats-not-working)
+- [OpenCode v2 (beta)](#opencode-v2-beta)
+- [Requirements](#requirements)
+- [Tested on](#tested-on)
+- [AMOLED themes](#amoled-themes)
+
 ## Why
 
 opencode is a Bun standalone binary. The Bun team has [closed Android support as "not planned"](https://github.com/oven-sh/bun/issues/9), so running opencode on Termux normally requires:
