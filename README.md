@@ -214,15 +214,19 @@ Seven true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json
 <details>
 <summary><strong>Theme previews</strong> (click to expand)</summary>
 
-| Theme | Preview |
-|-------|---------|
-| 1-rbw-amoled | <img src="docs/screenshots/themes/1-rbw-amoled.png" width="300" alt="1-rbw-amoled"> |
-| 2-obw-amoled | <img src="docs/screenshots/themes/2-obw-amoled.png" width="300" alt="2-obw-amoled"> |
-| 3-ybw-amoled | <img src="docs/screenshots/themes/3-ybw-amoled.png" width="300" alt="3-ybw-amoled"> |
-| 4-gbw-amoled | <img src="docs/screenshots/themes/4-gbw-amoled.png" width="300" alt="4-gbw-amoled"> |
-| 5-bbw-amoled | <img src="docs/screenshots/themes/5-bbw-amoled.png" width="300" alt="5-bbw-amoled"> |
-| 6-vbw-amoled | <img src="docs/screenshots/themes/6-vbw-amoled.png" width="300" alt="6-vbw-amoled"> |
-| 7-pbw-amoled | <img src="docs/screenshots/themes/7-pbw-amoled.png" width="300" alt="7-pbw-amoled"> |
+<table>
+<tr>
+<td align="center"><a href="docs/screenshots/themes/1-rbw-amoled.png"><img src="docs/screenshots/themes/1-rbw-amoled.png" width="180" alt="1-rbw-amoled"></a><br><sub>1-rbw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/2-obw-amoled.png"><img src="docs/screenshots/themes/2-obw-amoled.png" width="180" alt="2-obw-amoled"></a><br><sub>2-obw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/3-ybw-amoled.png"><img src="docs/screenshots/themes/3-ybw-amoled.png" width="180" alt="3-ybw-amoled"></a><br><sub>3-ybw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/4-gbw-amoled.png"><img src="docs/screenshots/themes/4-gbw-amoled.png" width="180" alt="4-gbw-amoled"></a><br><sub>4-gbw-amoled</sub></td>
+</tr>
+<tr>
+<td align="center"><a href="docs/screenshots/themes/5-bbw-amoled.png"><img src="docs/screenshots/themes/5-bbw-amoled.png" width="180" alt="5-bbw-amoled"></a><br><sub>5-bbw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/6-vbw-amoled.png"><img src="docs/screenshots/themes/6-vbw-amoled.png" width="180" alt="6-vbw-amoled"></a><br><sub>6-vbw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/7-pbw-amoled.png"><img src="docs/screenshots/themes/7-pbw-amoled.png" width="180" alt="7-pbw-amoled"></a><br><sub>7-pbw-amoled</sub></td>
+</tr>
+</table>
 
 </details>
 
