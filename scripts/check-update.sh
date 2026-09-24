@@ -57,6 +57,15 @@ if [ "$installed" = "$latest" ]; then
   exit 0
 fi
 
+# Only treat latest > installed as an update. If the installed build
+# is newer (e.g. manually installed pre-release), never "update" —
+# that path would downgrade a working installation.
+oldest="$(printf '%s\n%s\n' "$installed" "$latest" | sort -V | head -1)"
+if [ "$oldest" = "$latest" ]; then
+  echo "Installed $installed is newer than latest upstream release $latest; nothing to do."
+  exit 0
+fi
+
 echo "Update available: installed $installed, latest $latest."
 notify "opencode $installed -> $latest available. Re-run install.sh to update."
 
