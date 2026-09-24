@@ -207,6 +207,25 @@ This runs `opencode2 update` inside proot Ubuntu. After it completes, the wrappe
 
 </details>
 
+## AMOLED themes
+
+Seven true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json` to `~/.config/opencode/themes/` and select it with `/theme` or `tui.json`. Previews rendered from `theme-showcase.md`:
+
+<details>
+<summary><strong>Theme previews</strong> (click to expand)</summary>
+
+| Theme | Preview |
+|-------|---------|
+| 1-rbw-amoled | <img src="docs/screenshots/themes/1-rbw-amoled.png" width="300" alt="1-rbw-amoled"> |
+| 2-obw-amoled | <img src="docs/screenshots/themes/2-obw-amoled.png" width="300" alt="2-obw-amoled"> |
+| 3-ybw-amoled | <img src="docs/screenshots/themes/3-ybw-amoled.png" width="300" alt="3-ybw-amoled"> |
+| 4-gbw-amoled | <img src="docs/screenshots/themes/4-gbw-amoled.png" width="300" alt="4-gbw-amoled"> |
+| 5-bbw-amoled | <img src="docs/screenshots/themes/5-bbw-amoled.png" width="300" alt="5-bbw-amoled"> |
+| 6-vbw-amoled | <img src="docs/screenshots/themes/6-vbw-amoled.png" width="300" alt="6-vbw-amoled"> |
+| 7-pbw-amoled | <img src="docs/screenshots/themes/7-pbw-amoled.png" width="300" alt="7-pbw-amoled"> |
+
+</details>
+
 ## Credits
 
 - [opencode](https://github.com/anomalyco/opencode) by [Anomaly](https://anoma.ly) — the AI coding CLI this project wraps
