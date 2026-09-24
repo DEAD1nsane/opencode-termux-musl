@@ -3,7 +3,7 @@
   "defs": {
     "black": "#000000",
     "bg": "#000000",
-    "surface": "#000000",
+    "surface": "#111111",
     "red": "#ff2740",
     "soft-red": "#E75566",
     "white": "#ffffff",
@@ -13,8 +13,7 @@
     "code-highlight": "#FFFF4B",
     "diff-green-bg": "#0F2418",
     "diff-red-bg": "#2A1216",
-    "diff-red": "#ff2740",
-    "diff-bg": "#0F0F0F"
+    "diff-red": "#ff2740"
   },
   "theme": {
     "primary": {
@@ -110,7 +109,7 @@
       "light": "diff-red-bg"
     },
     "diffContextBg": {
-      "dark": "diff-bg",
+      "dark": "black",
       "light": "white"
     },
     "diffLineNumber": {

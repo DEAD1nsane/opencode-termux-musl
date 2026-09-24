@@ -3,7 +3,7 @@
   "defs": {
     "black": "#000000",
     "bg": "#000000",
-    "surface": "#000000",
+    "surface": "#111111",
     "red": "#00FF7A",
     "soft-accent": "#55E79B",
     "white": "#ffffff",
