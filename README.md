@@ -209,6 +209,14 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
   -s /path/to/opencode-termux-musl/scripts/check-update.sh
 ```
 
+For unattended updates, schedule `scripts/auto-update.sh` instead. It runs the check with `--yes` and invokes `install.sh` only when a newer upstream release is available:
+
+```sh
+termux-job-scheduler --job-id 7801 --period-ms 86400000 \
+  --network unmetered --persisted true \
+  -s /path/to/opencode-termux-musl/scripts/auto-update.sh
+```
+
 ## Requirements
 
 - Termux (Android 7.0+ / API 24+, aarch64)
