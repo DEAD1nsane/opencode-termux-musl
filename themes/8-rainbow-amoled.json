@@ -40,8 +40,8 @@
       "light": "diff-red"
     },
     "warning": {
-      "dark": "orange",
-      "light": "orange"
+      "dark": "red",
+      "light": "red"
     },
     "success": {
       "dark": "diff-green",
@@ -140,8 +140,8 @@
       "light": "black"
     },
     "markdownLink": {
-      "dark": "red",
-      "light": "red"
+      "dark": "orange",
+      "light": "orange"
     },
     "markdownLinkText": {
       "dark": "grey",
