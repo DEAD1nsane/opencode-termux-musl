@@ -179,6 +179,23 @@ This runs `opencode2 update` inside proot Ubuntu. After it completes, the wrappe
 
 **Status**: v1 is stable and production-ready. v2 works via proot Ubuntu. This project remains the stable solution for v1.
 
+### Auto-update check (v1)
+
+`scripts/check-update.sh` compares your installed version against the latest upstream release. By default it only checks and sends a Termux notification — it never downloads anything. Pass `--yes` to apply the update via `install.sh`:
+
+```sh
+./scripts/check-update.sh         # check only
+./scripts/check-update.sh --yes   # update now if behind
+```
+
+Daily unattended check (needs the Termux:API app — Wi-Fi only, survives reboot):
+
+```sh
+termux-job-scheduler --job-id 7801 --period-ms 86400000 \
+  --network unmetered --persisted true \
+  -s /path/to/opencode-termux-musl/scripts/check-update.sh
+```
+
 ## Requirements
 
 - Termux (Android 7.0+ / API 24+, aarch64)
