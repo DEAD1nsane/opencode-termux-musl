@@ -241,6 +241,8 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
 
 Seven true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json` to `~/.config/opencode/themes/` and select it with `/theme` or `tui.json`. Previews rendered from `theme-showcase.md`:
 
+> Side note: these are deliberately restrained next to the stock built-in themes — each one leans on a single accent color, especially for syntax highlighting, trading rainbow code for contrast on pure black.
+
 <details>
 <summary><strong>Theme previews</strong> (click to expand)</summary>
 
