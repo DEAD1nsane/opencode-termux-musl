@@ -232,8 +232,6 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
 | Installed files | <img src="docs/screenshots/03-installed-files.png" width="300" alt="Installed files"> |
 | ELF interpreter | <img src="docs/screenshots/04-elf-interpreter.png" width="300" alt="ELF interpreter"> |
 | opencode TUI | <img src="docs/screenshots/05-opencode-tui.png" width="300" alt="opencode TUI"> |
-| Running opencode | <img src="docs/screenshots/06-opencode-working.png" width="300" alt="Running opencode"> |
-| Newest version | <img src="docs/screenshots/07-opencode-newest-version.png" width="300" alt="Newest version"> |
 
 </details>
 
