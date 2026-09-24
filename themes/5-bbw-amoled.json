@@ -186,8 +186,8 @@
       "light": "grey"
     },
     "syntaxKeyword": {
-      "dark": "white",
-      "light": "black"
+      "dark": "red",
+      "light": "red"
     },
     "syntaxFunction": {
       "dark": "white",
@@ -206,8 +206,8 @@
       "light": "black"
     },
     "syntaxType": {
-      "dark": "white",
-      "light": "black"
+      "dark": "soft-accent",
+      "light": "soft-accent"
     },
     "syntaxOperator": {
       "dark": "grey",
