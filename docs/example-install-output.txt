@@ -1,10 +1,10 @@
 Sample output from `./install.sh` on a Pixel 10 (Android 17, Termux
-0.119) on 2026-09-06. Captured opencode release is v1.18.29; the
+0.119) on 2026-09-24. Captured opencode release is v1.18.32; the
 Alpine version + package versions will shift as Alpine rolls new
 releases — the install script picks the latest dynamically.
 
     ==> Resolving latest opencode version...
-    ==> Installing opencode v1.18.29
+    ==> Installing opencode v1.18.32
     ==> Resolving Alpine release...
     ==> Using Alpine v3.24.
     ==> Using musl-1.2.6-r2.apk, libstdc++-15.2.0-r5.apk, libgcc-15.2.0-r5.apk.
@@ -18,10 +18,12 @@ releases — the install script picks the latest dynamically.
     tar: Ignoring unknown extended header keyword 'APK-TOOLS.checksum.SHA1'
     ==> Using musl-libs/usr/lib/libstdc++.so.6.0.34.
     ==> Installing musl libs to /data/data/com.termux/files/usr/lib...
+    ==> Building libresolvefix.so...
+    ==> Installing HTTP proxy...
     ==> Installing opencode binary...
     ==> Installing wrapper script...
     ==> Done. Try: opencode --version
-    1.18.29
+    1.18.32
 
 The `APK-TOOLS.checksum.SHA1` warnings are harmless — Alpine's apk
 format embeds pax headers GNU tar doesn't recognize. To suppress,

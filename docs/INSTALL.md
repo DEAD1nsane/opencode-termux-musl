@@ -26,14 +26,14 @@ curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/mas
 Pin a version instead of `latest`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | OPENCODE_VERSION=v1.18.31 sh
+curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | OPENCODE_VERSION=v1.18.32 sh
 ```
 
 Or after cloning:
 
 ```sh
 ./install.sh
-OPENCODE_VERSION=v1.18.31 ./install.sh
+OPENCODE_VERSION=v1.18.32 ./install.sh
 ```
 
 Re-running is safe — it re-downloads and re-installs.
@@ -44,7 +44,7 @@ Re-running is safe — it re-downloads and re-installs.
 
 ## What gets downloaded?
 
-About **~64 MB total** (measured for `opencode v1.18.31` + Alpine `v3.24`):
+About **~64 MB total** (measured for `opencode v1.18.32` + Alpine `v3.24`):
 
 | What | File | Size |
 |---|---|---|
@@ -81,10 +81,10 @@ Telegram saved messages.
 
 ### 1. Download the big tarball yourself (progress + resume)
 
-> **Note:** `v1.18.31` below is an example. Check `install.sh` output or [upstream releases](https://github.com/anomalyco/opencode/releases) for the current version tag.
+> **Note:** `v1.18.32` below is an example. Check `install.sh` output or [upstream releases](https://github.com/anomalyco/opencode/releases) for the current version tag.
 
 ```sh
-OPENCODE_VERSION=v1.18.31
+OPENCODE_VERSION=v1.18.32
 curl -L -C - --progress-bar \
   -o opencode-linux-arm64-musl.tar.gz \
   "https://github.com/anomalyco/opencode/releases/download/$OPENCODE_VERSION/opencode-linux-arm64-musl.tar.gz"
@@ -98,7 +98,7 @@ Copy the file to your phone if you downloaded it elsewhere.
 ### 2. Feed it to the installer (skips download)
 
 ```sh
-OPENCODE_VERSION=v1.18.31 \
+OPENCODE_VERSION=v1.18.32 \
 OPENCODE_TARBALL_PATH=./opencode-linux-arm64-musl.tar.gz \
 ./install.sh
 ```
@@ -126,7 +126,7 @@ LIBGCC_PKG_PATH=./libgcc-15.2.0-r5.apk \
 Fully offline example:
 
 ```sh
-OPENCODE_VERSION=v1.18.31 \
+OPENCODE_VERSION=v1.18.32 \
 OPENCODE_TARBALL_PATH=./opencode-linux-arm64-musl.tar.gz \
 MUSL_PKG_PATH=./musl-1.2.6-r2.apk \
 LIBSTDC_PKG_PATH=./libstdc++-15.2.0-r5.apk \
@@ -171,7 +171,7 @@ watch -n1 'ls -lh ~/tmp/opencode-musl-install.*/'
 
 | Symptom | Fix |
 |---|---|
-| `Could not resolve latest version` | GitHub API blocked / rate-limited. Pin a version: `OPENCODE_VERSION=v1.18.31 ./install.sh`. |
+| `Could not resolve latest version` | GitHub API blocked / rate-limited. Pin a version: `OPENCODE_VERSION=v1.18.32 ./install.sh`. |
 | `Download failed` mid-way | Re-run, or use the [manual download flow](#manual-download--offline-install) with `curl -C -` resume. |
 | `Only aarch64 is supported` | `uname -m` must print `aarch64` (upstream ships no `armv7` musl build). |
 | `clang` / `patchelf` missing | The script runs `pkg install -y clang patchelf` automatically (extra download, 100s of MB for `clang`). |
