@@ -239,9 +239,9 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
 
 ## AMOLED themes
 
-Seven true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json` to `~/.config/opencode/themes/` and select it with `/theme` or `tui.json`. Previews rendered from `theme-showcase.md`:
+Eight true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json` to `~/.config/opencode/themes/` and select it with `/theme` or `tui.json`. Previews rendered from `theme-showcase.md`:
 
-> Side note: these are deliberately restrained next to the stock built-in themes — each one leans on a single accent color, especially for syntax highlighting, trading rainbow code for contrast on pure black.
+> Side note: the seven accent themes are deliberately restrained next to the stock built-in themes — each one leans on a single accent color, especially for syntax highlighting, trading rainbow code for contrast on pure black. `8-rainbow` is the exception: white chrome, red links, full neon syntax.
 
 <details>
 <summary><strong>Theme previews</strong> (click to expand)</summary>
@@ -257,6 +257,7 @@ Seven true-black (`#000000`) themes in [`themes/`](themes/) — copy any `*.json
 <td align="center"><a href="docs/screenshots/themes/5-bbw-amoled.png"><img src="docs/screenshots/themes/5-bbw-amoled.png" width="180" alt="5-bbw-amoled"></a><br><sub>5-bbw-amoled</sub></td>
 <td align="center"><a href="docs/screenshots/themes/6-vbw-amoled.png"><img src="docs/screenshots/themes/6-vbw-amoled.png" width="180" alt="6-vbw-amoled"></a><br><sub>6-vbw-amoled</sub></td>
 <td align="center"><a href="docs/screenshots/themes/7-pbw-amoled.png"><img src="docs/screenshots/themes/7-pbw-amoled.png" width="180" alt="7-pbw-amoled"></a><br><sub>7-pbw-amoled</sub></td>
+<td align="center"><a href="docs/screenshots/themes/8-rainbow-amoled.png"><img src="docs/screenshots/themes/8-rainbow-amoled.png" width="180" alt="8-rainbow-amoled"></a><br><sub>8-rainbow-amoled</sub></td>
 </tr>
 </table>
 
