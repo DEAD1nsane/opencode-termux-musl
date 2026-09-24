@@ -16,8 +16,6 @@ This is an alternative to [guysoft/opencode-termux](https://github.com/guysoft/o
 - [Requirements](#requirements)
 - [Tested on](#tested-on)
 - [AMOLED themes](#amoled-themes)
-- [Credits](#credits)
-- [License](#license)
 
 ## Why
 
