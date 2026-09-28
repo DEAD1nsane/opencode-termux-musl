@@ -67,17 +67,26 @@ if [ "$oldest" = "$latest" ]; then
 fi
 
 echo "Update available: installed $installed, latest $latest."
-notify "opencode $installed -> $latest available. Re-run install.sh to update."
 
 if [ "$APPLY" -eq 1 ]; then
+  notify "opencode $installed -> $latest available. Auto-updating via install.sh..."
   if [ -x "$SCRIPT_DIR/../install.sh" ]; then
     echo "Applying update via install.sh..."
-    exec "$SCRIPT_DIR/../install.sh"
+    "$SCRIPT_DIR/../install.sh"
+    rc=$?
+    if [ $rc -eq 0 ]; then
+      notify "opencode updated to $latest."
+    else
+      notify "opencode auto-update failed (exit $rc). Re-run install.sh manually."
+    fi
+    exit $rc
   else
     echo "Cannot auto-apply: install.sh not found next to this script." >&2
     echo "Update manually: curl -fsSL https://raw.githubusercontent.com/DEAD1nsane/opencode-termux-musl/master/install.sh | sh" >&2
     exit 2
   fi
 fi
+
+notify "opencode $installed -> $latest available. Re-run install.sh to update."
 
 exit 2
