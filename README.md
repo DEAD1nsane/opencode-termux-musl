@@ -217,6 +217,8 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
   -s /path/to/opencode-termux-musl/scripts/auto-update.sh
 ```
 
+<img src="docs/screenshots/06-auto-update-notification.png" width="300" alt="Auto-update notifications">
+
 ## Requirements
 
 - Termux (Android 7.0+ / API 24+, aarch64)
