@@ -230,6 +230,22 @@ export PATH
 export PREFIX
 export TERM="${TERM:-xterm-256color}"
 export LANG="${LANG:-en_US.UTF-8}"
+# Timezone: opencode (Bun) renders timestamps in UTC unless TZ says otherwise.
+# Follow the phone's own zone so session times match the status-bar clock.
+# An explicit TZ wins; otherwise take Android's, then /etc/localtime (proot),
+# and if neither works leave TZ unset rather than guess.
+if [ -z "$TZ" ]; then
+  if command -v getprop >/dev/null 2>&1; then
+    __TZ=$(getprop persist.sys.timezone 2>/dev/null)
+  else
+    __TZ=""
+  fi
+  if [ -z "$__TZ" ] && [ -e /etc/localtime ]; then
+    __TZ=$(readlink -f /etc/localtime 2>/dev/null | sed 's#.*/zoneinfo/##')
+  fi
+  [ -n "$__TZ" ] && export TZ="$__TZ"
+  unset __TZ
+fi
 export TMPDIR="${TMPDIR:-$HOME/tmp}"
 export TEMP="${TMPDIR:-$HOME/tmp}"
 export TMP="${TMPDIR:-$HOME/tmp}"
