@@ -217,7 +217,9 @@ termux-job-scheduler --job-id 7801 --period-ms 86400000 \
   -s /path/to/opencode-termux-musl/scripts/auto-update.sh
 ```
 
-<img src="docs/screenshots/06-auto-update-notification.png" width="300" alt="Auto-update notifications">
+> Proof it works — real auto-update notifications on Android:
+>
+> <img src="docs/screenshots/06-auto-update-notification.png" width="300" alt="Auto-update notifications">
 
 ## Requirements
 
